@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>plugin</artifactId>
+    <groupId>cn.labzen</groupId>
+    <version>1.0-SNAPSHOT</version>
+    <relativePath>../parent</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>api</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>${organization.name}.Plugin.API</name>
+  <description>Labzen Plugin API - executable capability model definition for plug-in mechanisms</description>
+
+  <dependencies>
+
+  </dependencies>
+
+  <build>
+    <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
+  </build>
+</project>
