@@ -1,9 +1,9 @@
 package cn.labzen.plugin.api.exception
 
-import cn.labzen.cells.core.exception.LabzenRuntimeException
+import cn.labzen.meta.exception.LabzenRuntimeException
 
 
-class PluginInvokeException : LabzenRuntimeException {
+class PluginDataValueInvalidException : LabzenRuntimeException {
 
   constructor(message: String) : super(message)
   constructor(message: String, vararg arguments: Any?) : super(message, *arguments)

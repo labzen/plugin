@@ -10,11 +10,11 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>api</artifactId>
+  <artifactId>plugin-api</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
-  <name>${organization.name}.Plugin.API</name>
-  <description>Labzen Plugin API - executable capability model definition for plug-in mechanisms</description>
+  <name>Labzen.Plugin.API</name>
+  <description>Labzen Plugin API - 插件机制底层API支撑</description>
 
   <dependencies>
 

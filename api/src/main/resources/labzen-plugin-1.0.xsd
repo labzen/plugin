@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="https://www.labzen.cn/"
+           elementFormDefault="qualified" version="1.0">
+
+  <xs:element name="plugin">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="name">
+          <xs:annotation>
+            <xs:documentation source="version">1.0</xs:documentation>
+            <xs:documentation source="description" xml:lang="zh">插件的名称（小写字母开头+下划线）</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:pattern value="[a-z]+(_[a-z]+)*"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+
+        <xs:element name="based" type="xs:string">
+          <xs:annotation>
+            <xs:documentation source="version">1.0</xs:documentation>
+            <xs:documentation source="description" xml:lang="zh">依赖的插件API版本</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="pluggable" type="xs:string">
+          <xs:annotation>
+            <xs:documentation source="version">1.0</xs:documentation>
+            <xs:documentation source="description" xml:lang="zh">
+              插件主类，必须是实现了 cn.labzen.plugin.api.dev.Pluggable 接口的类
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="version" type="xs:string" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation source="version">1.0</xs:documentation>
+            <xs:documentation source="description" xml:lang="zh">
+              版本格式参考Maven对版本的定义，如果插件是以Maven构建，则可忽略
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="description">
+          <xs:annotation>
+            <xs:documentation source="version">1.0</xs:documentation>
+            <xs:documentation source="description" xml:lang="zh">
+              插件的功能详细描述
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="tags" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation source="version">1.0</xs:documentation>
+            <xs:documentation source="description" xml:lang="zh">
+              插件标签列表
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="name" maxOccurs="unbounded" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation source="version">1.0</xs:documentation>
+                  <xs:documentation source="description" xml:lang="zh">标签名</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="authors" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation source="version">1.0</xs:documentation>
+            <xs:documentation source="description" xml:lang="zh">
+              插件作者列表
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="author" maxOccurs="unbounded">
+                <xs:annotation>
+                  <xs:documentation source="version">1.0</xs:documentation>
+                  <xs:documentation source="description" xml:lang="zh">插件作者信息</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="name">
+                      <xs:annotation>
+                        <xs:documentation source="version">1.0</xs:documentation>
+                        <xs:documentation source="description" xml:lang="zh">插件作者真实姓名</xs:documentation>
+                      </xs:annotation>
+                      <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                          <xs:minLength value="2"/>
+                          <xs:maxLength value="6"/>
+                        </xs:restriction>
+                      </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="email" minOccurs="0">
+                      <xs:annotation>
+                        <xs:documentation source="version">1.0</xs:documentation>
+                        <xs:documentation source="description" xml:lang="zh">插件作者邮箱地址</xs:documentation>
+                      </xs:annotation>
+                      <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                          <xs:pattern
+                              value="([a-zA-Z0-9_-]+)(\.([a-zA-Z0-9_-]+))?@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+"/>
+                        </xs:restriction>
+                      </xs:simpleType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="changelog">
+          <xs:annotation>
+            <xs:documentation source="version">1.0</xs:documentation>
+            <xs:documentation source="description" xml:lang="zh">插件的Changelog</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="log" maxOccurs="unbounded">
+                <xs:annotation>
+                  <xs:documentation source="version">1.0</xs:documentation>
+                  <xs:documentation source="description" xml:lang="zh">一次版本升级的内容描述</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="version">
+                      <xs:annotation>
+                        <xs:documentation source="version">1.0</xs:documentation>
+                        <xs:documentation source="description" xml:lang="zh">
+                          版本格式等同于Maven的版本或本文件内的版本定义
+                        </xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element name="content" maxOccurs="unbounded">
+                      <xs:annotation>
+                        <xs:documentation source="version">1.0</xs:documentation>
+                        <xs:documentation source="description" xml:lang="zh">
+                          对于具体功能的修改描述，一个content标签描述一个功能
+                        </xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

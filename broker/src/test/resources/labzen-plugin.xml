@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://www.labzen.cn/"
+        xsi:schemaLocation="https://www.labzen.cn/ https://www.labzen.cn/plugin/labzen-plugin-1.0.xsd">
+  <name>abc_xyz</name>
+  <based>1.0</based>
+  <pluggable>com.example.plugin</pluggable>
+  <version>1</version>
+  <description>描述</description>
+  <tags>
+    <name>静脉</name>
+    <name>硬件</name>
+  </tags>
+  <authors>
+    <author>
+      <name>张三</name>
+      <email>234234@qq.com</email>
+    </author>
+  </authors>
+  <changelog>
+    <log>
+      <version>1</version>
+      <content>变更信息1</content>
+      <content>变更信息2</content>
+    </log>
+  </changelog>
+</plugin>
