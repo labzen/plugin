@@ -10,9 +10,6 @@ import java.net.URL
 
 open class FileResourceLoader(private val file: File) : ResourceLoader {
 
-  // constructor(location: String) : this(File(location))
-  // constructor(path: Path) : this(path.toFile())
-
   protected val fileUrl: URL = file.toURI().toURL()
 
   init {

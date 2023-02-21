@@ -1,34 +1,40 @@
 package cn.labzen.plugin.broker.specific
 
 import cn.labzen.cells.core.kotlin.throwRuntimeUnless
-import cn.labzen.cells.core.utils.Strings
 import cn.labzen.plugin.api.bean.Outcome
 import cn.labzen.plugin.api.bean.Values
 import cn.labzen.plugin.api.bean.schema.DataFieldSchema
+import cn.labzen.plugin.api.bean.schema.DataSchema
 import cn.labzen.plugin.api.bean.schema.ExtensionSchema
 import cn.labzen.plugin.api.broker.Extension
 import cn.labzen.plugin.api.dev.Extensible
 import cn.labzen.plugin.api.dev.Mountable
-import cn.labzen.plugin.api.dev.Pluggable
-import cn.labzen.plugin.api.dev.annotation.ExtensionParameter
-import cn.labzen.plugin.api.dev.annotation.ExtensionReturn
+import cn.labzen.plugin.api.dev.annotation.ExtensionProperty
 import cn.labzen.plugin.api.dev.annotation.Mounted
 import cn.labzen.plugin.broker.exception.PluginInstantiateException
 import cn.labzen.plugin.broker.exception.PluginResourceLoadException
 import org.reflections.ReflectionUtils
-import org.reflections.Reflections
-import org.reflections.scanners.Scanners
-import org.reflections.util.ConfigurationBuilder
 import java.util.function.Predicate
 import cn.labzen.plugin.api.dev.annotation.Extension as ExtensionAnnotation
 
 class SpecificExtension internal constructor(
+  private val configurator: SpecificConfigurator,
   private val schema: ExtensionSchema,
   private val mountableInstance: Mountable? = null
 ) : Extension {
 
-  private val inputParameterValues = Values(schema.inputParameters)
-  private lateinit var instance: Extensible
+  private val inputParameterValues = Values.withSchema(schema.inputParameters)
+  private val instance: Extensible
+
+  init {
+    try {
+      instance = schema.extensibleClass.getDeclaredConstructor().newInstance()
+    } catch (e: Exception) {
+      throw PluginInstantiateException("无法实例化扩展服务 - ${schema.extensibleClass}")
+    }
+
+    configurator.injectTo(instance)
+  }
 
   override fun setParameter(name: String, value: Any?) {
     inputParameterValues[name] = value
@@ -48,14 +54,10 @@ class SpecificExtension internal constructor(
       }
     }
 
-    inputParameterValues.validate()
-
-    if (!this::instance.isInitialized) {
-      try {
-        instance = schema.extensibleClass.getDeclaredConstructor().newInstance()
-      } catch (e: Exception) {
-        throw PluginInstantiateException("无法实例化扩展服务 - ${schema.extensibleClass}")
-      }
+    try {
+      inputParameterValues.validate()
+    } catch (e: Exception) {
+      return Outcome.failed(e.message ?: "参数校验失败")
     }
 
     try {
@@ -81,53 +83,20 @@ class SpecificExtension internal constructor(
     return instance.execute()
   }
 
-  override fun <T> getResult(name: String): T? {
-    val fieldSchema = schema.outputParameters.find { it.name == name } ?: throw PluginInstantiateException("")
-
-    @Suppress("UNCHECKED_CAST")
-    return fieldSchema.field.get(instance) as T?
-  }
-
   companion object {
 
-    internal fun scanExtensibleClasses(pluggableClass: Class<Pluggable>): Map<String, ExtensionSchema> {
-      val classLoader = pluggableClass.classLoader
-      val rootPackage = pluggableClass.`package`.name
-      val configurationBuilder = ConfigurationBuilder()
-        .forPackage(rootPackage, classLoader)
-        .addScanners(Scanners.TypesAnnotated)
-      val reflections = Reflections(configurationBuilder)
-
-      val extensibleClass = Extensible::class.java
-      val extensibleClasses =
-        reflections.getTypesAnnotatedWith(ExtensionAnnotation::class.java)
-          .filter { !it.isInterface && extensibleClass.isAssignableFrom(it) }
-          .map {
-            @Suppress("UNCHECKED_CAST")
-            it as Class<Extensible>
-          }
-
+    internal fun scanExtensibleClasses(classes: List<Class<*>>): Map<String, ExtensionSchema> {
+      @Suppress("UNCHECKED_CAST")
+      val extensibleClasses = classes as List<Class<Extensible>>
       return extensibleClasses.map(this::parseExtensibleClass).associateBy { it.name }
     }
 
     private fun parseExtensibleClass(extensibleClass: Class<Extensible>): ExtensionSchema {
       val extensionAnnotation = extensibleClass.getAnnotation(ExtensionAnnotation::class.java)
 
-      val inputParameters = ReflectionUtils.getAllFields(extensibleClass, Predicate {
-        it.isAnnotationPresent(ExtensionParameter::class.java)
-      }).map {
-        val snakeName = Strings.snakeCase(it.name)
-        val parameterAnnotation = it.getAnnotation(ExtensionParameter::class.java)
-        DataFieldSchema(snakeName, parameterAnnotation.description, parameterAnnotation.required, it)
-      }
+      val inputParameters = parseExtensionInputs(extensibleClass)
 
-      val outputParameters = ReflectionUtils.getAllFields(extensibleClass, Predicate {
-        it.isAnnotationPresent(ExtensionReturn::class.java)
-      }).map {
-        val snakeName = Strings.snakeCase(it.name)
-        val returnAnnotation = it.getAnnotation(ExtensionReturn::class.java)
-        DataFieldSchema(snakeName, returnAnnotation.description, returnAnnotation.required, it)
-      }
+      val outputParameters = parseExtensionOutputs(extensionAnnotation)
 
       val mountedFields = ReflectionUtils.getAllFields(extensibleClass, Predicate {
         it.isAnnotationPresent(Mounted::class.java) && Mountable::class.java.isAssignableFrom(it.type)
@@ -146,6 +115,38 @@ class SpecificExtension internal constructor(
         outputParameters,
         mountedField
       )
+    }
+
+    private fun parseExtensionPropertyType(schema: DataSchema) {
+      ReflectionUtils.getAllFields(schema.type, Predicate {
+        it.isAnnotationPresent(ExtensionProperty::class.java)
+      }).map {
+        val propertyAnnotation = it.getAnnotation(ExtensionProperty::class.java)
+        val propertyName = propertyAnnotation.name.ifBlank { it.name }
+        DataSchema(propertyName, it.type, propertyAnnotation.description, propertyAnnotation.required).also { schema ->
+          parseExtensionPropertyType(schema)
+        }
+      }.apply {
+        schema.subs.addAll(this)
+      }
+    }
+
+    private fun parseExtensionInputs(extensibleClass: Class<Extensible>): List<DataFieldSchema> {
+      return ReflectionUtils.getAllFields(extensibleClass, Predicate {
+        it.isAnnotationPresent(ExtensionProperty::class.java)
+      }).map {
+        val propertyAnnotation = it.getAnnotation(ExtensionProperty::class.java)
+        val propertyName = propertyAnnotation.name.ifBlank { it.name }
+        DataFieldSchema(it, propertyName, propertyAnnotation.description, propertyAnnotation.required)
+      }
+    }
+
+    private fun parseExtensionOutputs(extensionAnnotation: ExtensionAnnotation): List<DataSchema> {
+      return extensionAnnotation.results.map {
+        DataSchema(it.name, it.type.java, it.description, it.required).also { schema ->
+          parseExtensionPropertyType(schema)
+        }
+      }
     }
   }
 }

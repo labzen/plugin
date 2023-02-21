@@ -9,23 +9,20 @@ import cn.labzen.plugin.api.bean.schema.MountSchema
 import cn.labzen.plugin.api.broker.Extension
 import cn.labzen.plugin.api.broker.Mount
 import cn.labzen.plugin.api.dev.Mountable
-import cn.labzen.plugin.api.dev.Pluggable
 import cn.labzen.plugin.api.dev.annotation.MountArgument
 import cn.labzen.plugin.broker.exception.PluginInstantiateException
 import cn.labzen.plugin.broker.exception.PluginOperationException
 import org.reflections.ReflectionUtils
-import org.reflections.Reflections
-import org.reflections.scanners.Scanners
-import org.reflections.util.ConfigurationBuilder
 import java.util.function.Predicate
 import cn.labzen.plugin.api.dev.annotation.Mount as MountAnnotation
 
 class SpecificMount internal constructor(
+  private val configurator: SpecificConfigurator,
   private val schema: MountSchema,
   private val extensionSchemas: Map<String, ExtensionSchema>
 ) : Mount {
 
-  private val argumentValues = Values(schema.arguments)
+  private val argumentValues = Values.withSchema(schema.arguments)
   private lateinit var instance: Mountable
 
   override fun setArgument(name: String, value: Any) {
@@ -44,6 +41,8 @@ class SpecificMount internal constructor(
     } catch (e: Exception) {
       throw PluginInstantiateException("无法实例化挂载组件 - ${schema.mountableClass}")
     }
+
+    configurator.injectTo(instance)
 
     try {
       schema.arguments.forEach {
@@ -66,27 +65,14 @@ class SpecificMount internal constructor(
 
     val extensionSchema =
       extensionSchemas[extensibleName] ?: throw PluginOperationException("无效的扩展服务 - $extensibleName")
-    return SpecificExtension(extensionSchema, instance)
+    return SpecificExtension(configurator, extensionSchema, instance)
   }
 
   companion object {
 
-    internal fun scanMountableClasses(pluggableClass: Class<Pluggable>): Map<String, MountSchema> {
-      val classLoader = pluggableClass.classLoader
-      val rootPackage = pluggableClass.`package`.name
-      val configurationBuilder = ConfigurationBuilder()
-        .forPackage(rootPackage, classLoader)
-        .addScanners(Scanners.TypesAnnotated)
-      val reflections = Reflections(configurationBuilder)
-
-      val mountableClass = Mountable::class.java
-      val mountableClasses = reflections.getTypesAnnotatedWith(MountAnnotation::class.java)
-        .filter { !it.isInterface && mountableClass.isAssignableFrom(it) }
-        .map {
-          @Suppress("UNCHECKED_CAST")
-          it as Class<Mountable>
-        }
-
+    internal fun scanMountableClasses(classes: List<Class<*>>): Map<String, MountSchema> {
+      @Suppress("UNCHECKED_CAST")
+      val mountableClasses = classes as List<Class<Mountable>>
       return mountableClasses.map(this::parseMountableClass).associateBy { it.name }
     }
 
@@ -101,7 +87,7 @@ class SpecificMount internal constructor(
       }).map {
         val snakeName = Strings.snakeCase(it.name)
         val argumentAnnotation = it.getAnnotation(MountArgument::class.java)
-        DataFieldSchema(snakeName, argumentAnnotation.description, argumentAnnotation.required, it)
+        DataFieldSchema(it,snakeName, argumentAnnotation.description, argumentAnnotation.required)
       }
 
       return MountSchema(

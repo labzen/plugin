@@ -5,4 +5,6 @@ open class DataSchema(
   val type: Class<*>,
   val description: String,
   val required: Boolean
-)
+) {
+  val subs = mutableListOf<DataSchema>()
+}

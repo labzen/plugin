@@ -5,19 +5,18 @@ import cn.labzen.cells.core.kotlin.throwRuntimeUnless
 import cn.labzen.plugin.api.dev.Pluggable
 import cn.labzen.plugin.broker.exception.PluginResourceInvalidException
 import cn.labzen.plugin.broker.exception.PluginResourceLoadException
+import cn.labzen.plugin.broker.loader.jcl.PluginClassLoader
 import cn.labzen.plugin.broker.maven.Mavens
 import cn.labzen.plugin.broker.maven.Mavens.MAVEN_JAR_FILE_EXTENSION
 import cn.labzen.plugin.broker.resource.ResourceLoader
 import cn.labzen.plugin.broker.xml.PluginInformation
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import org.springframework.boot.loader.LaunchedURLClassLoader
 import org.springframework.boot.loader.jar.JarFile
 import java.io.File
 import java.io.IOException
 import java.net.URISyntaxException
 import java.nio.file.Files
 import java.util.jar.JarEntry
-
 
 internal class PluginLoader(private val resourceLoader: ResourceLoader) {
 
@@ -43,6 +42,7 @@ internal class PluginLoader(private val resourceLoader: ResourceLoader) {
    * 创建插件相关的 class loader
    */
   internal fun createClassLoaders() {
+    // fixme: 如果只支持固定的一个 plugin-api 版本，那么 broker 已经在 "app" classloader 中依赖了 plugin-api，就没有必要再创建一个 classloader 了
     createApiClassLoaderIfNecessary()
     dependenciesClassLoader = createDependenciesClassLoader()
     pluginClassLoader = createPluginClassLoader()
@@ -131,14 +131,14 @@ internal class PluginLoader(private val resourceLoader: ResourceLoader) {
       artifact.advanced().downloadIfNecessary()
       val apiSource = artifact.originalSource!!
 
-      val classLoader = LaunchedURLClassLoader(
+      val classLoader = PluginClassLoader(
+        "plugin-api.$API_BASED_VERSION",
         arrayOf(apiSource),
         this.javaClass.classLoader
       )
 
       API_CLASS_LOADER.set(classLoader)
     }
-    // return API_CLASS_LOADER.get()
   }
 
   /**
@@ -146,7 +146,11 @@ internal class PluginLoader(private val resourceLoader: ResourceLoader) {
    */
   private fun createDependenciesClassLoader(): ClassLoader {
     val associates = resourceLoader.associates()
-    return LaunchedURLClassLoader(associates.toTypedArray(), API_CLASS_LOADER.get())
+    return PluginClassLoader(
+      "plugin-dependencies$${information.name}",
+      associates.toTypedArray(),
+      API_CLASS_LOADER.get()
+    )
   }
 
   /**
@@ -157,7 +161,7 @@ internal class PluginLoader(private val resourceLoader: ResourceLoader) {
     val pluginFile = File(pluginSource.toURI())
 
     return if (pluginFile.isFile) {
-      LaunchedURLClassLoader(arrayOf(pluginSource), dependenciesClassLoader)
+      PluginClassLoader("plugin$${information.name}", arrayOf(pluginSource), dependenciesClassLoader)
     } else {
       val classesDirectory = File(pluginFile, "target/classes")
       throwRuntimeUnless(classesDirectory.exists()) {
@@ -165,19 +169,12 @@ internal class PluginLoader(private val resourceLoader: ResourceLoader) {
       }
 
       val classesSource = classesDirectory.toURI().toURL()
-      LaunchedURLClassLoader(arrayOf(classesSource), dependenciesClassLoader)
+      PluginClassLoader("plugin$${information.name}",arrayOf(classesSource), dependenciesClassLoader)
     }
   }
 
   companion object {
     private const val BOM_XML_FILE = "labzen-plugin.xml"
-
-    /**
-     * key: plugin-api version
-     *
-     * value: 只负责该版本jar的classloader
-     */
-    // private val BASED_API_CLASSLOADERS = mutableMapOf<String, ClassLoader>()
 
     internal const val API_BASED_VERSION = "1.0-SNAPSHOT"
     private val API_CLASS_LOADER = InitOnceProperty<ClassLoader>()

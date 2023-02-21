@@ -17,7 +17,11 @@
   <description>Labzen Plugin API - 插件机制底层API支撑</description>
 
   <dependencies>
-
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>

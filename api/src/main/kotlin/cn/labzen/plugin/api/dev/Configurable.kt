@@ -2,7 +2,6 @@ package cn.labzen.plugin.api.dev
 
 import cn.labzen.plugin.api.dev.annotation.Configuration
 import cn.labzen.plugin.api.dev.annotation.Configured
-import cn.labzen.plugin.api.exception.PluginDataValueInvalidException
 
 /**
  * 插件的可配置接口，开发者需继承本接口，加入需要获取的配置。
@@ -19,11 +18,4 @@ import cn.labzen.plugin.api.exception.PluginDataValueInvalidException
  * }
  * ```
  */
-interface Configurable {
-
-  // /**
-  //  * 校验插件的配置
-  //  */
-  // @Throws(PluginDataValueInvalidException::class)
-  // fun validate()
-}
+interface Configurable

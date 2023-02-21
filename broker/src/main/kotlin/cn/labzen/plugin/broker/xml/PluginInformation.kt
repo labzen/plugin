@@ -18,8 +18,6 @@ class PluginInformation : Information {
   var version: String? = null
   lateinit var description: String
 
-  @JacksonXmlProperty(localName = "name")
-  @JacksonXmlElementWrapper(localName = "tags")
   var tags: List<String>? = null
 
   @JacksonXmlProperty(localName = "author")

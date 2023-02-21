@@ -10,9 +10,6 @@ import java.util.jar.JarEntry
 
 open class JarFileResourceLoader(file: File) : FileResourceLoader(file) {
 
-  // constructor(location: String) : this(File(location))
-  // constructor(path: Path) : this(path.toFile())
-
   private val jarFile = try {
     JarFile(file)
   } catch (e: IOException) {
@@ -44,6 +41,6 @@ open class JarFileResourceLoader(file: File) : FileResourceLoader(file) {
   override fun supportExtensions(): List<String> = SUPPORT_EXTENSIONS
 
   companion object {
-    private val SUPPORT_EXTENSIONS = listOf(".jar")
+    private val SUPPORT_EXTENSIONS = listOf("jar")
   }
 }

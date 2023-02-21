@@ -1,19 +1,16 @@
-package cn.labzen.plugin.broker.event
+package cn.labzen.plugin.broker.specific
 
 import cn.labzen.cells.core.utils.Strings
 import cn.labzen.plugin.api.bean.schema.DataMethodSchema
 import cn.labzen.plugin.api.bean.schema.PublishSchema
-import cn.labzen.plugin.api.dev.Pluggable
 import cn.labzen.plugin.api.event.Publishable
 import cn.labzen.plugin.api.event.annotation.Publish
 import cn.labzen.plugin.api.event.annotation.PublishEvent
+import cn.labzen.plugin.broker.event.EventDispatcher
 import javassist.util.proxy.MethodHandler
 import javassist.util.proxy.ProxyFactory
 import javassist.util.proxy.ProxyObject
 import org.reflections.ReflectionUtils
-import org.reflections.Reflections
-import org.reflections.scanners.Scanners
-import org.reflections.util.ConfigurationBuilder
 import java.lang.reflect.Method
 import java.util.function.Predicate
 
@@ -37,23 +34,9 @@ class SpecificPublish internal constructor(internal val schema: PublishSchema) :
 
   companion object {
 
-    internal fun scanPublishableInterfaces(pluggableClass: Class<Pluggable>): Map<String, PublishSchema> {
-      val classLoader = pluggableClass.classLoader
-      val rootPackage = pluggableClass.`package`.name
-      val configurationBuilder = ConfigurationBuilder()
-        .forPackage(rootPackage, classLoader)
-        .addScanners(Scanners.TypesAnnotated)
-      val reflections = Reflections(configurationBuilder)
-
-      val publishableClass = Publishable::class.java
-      val publishableClasses =
-        reflections.getTypesAnnotatedWith(Publish::class.java)
-          .filter { it.isInterface && publishableClass.isAssignableFrom(it) }
-          .map {
-            @Suppress("UNCHECKED_CAST")
-            it as Class<Publishable>
-          }
-
+    internal fun scanPublishableInterfaces(classes: List<Class<*>>): Map<String, PublishSchema> {
+      @Suppress("UNCHECKED_CAST")
+      val publishableClasses = classes as List<Class<Publishable>>
       return publishableClasses.map(this::parsePublishableClass).associateBy { it.name }
     }
 

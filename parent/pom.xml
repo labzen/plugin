@@ -84,10 +84,6 @@
       <groupId>cn.labzen</groupId>
       <artifactId>cells-core</artifactId>
     </dependency>
-    <dependency>
-      <groupId>cn.labzen</groupId>
-      <artifactId>spring</artifactId>
-    </dependency>
   </dependencies>
 
   <build>

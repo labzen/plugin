@@ -13,8 +13,6 @@ class MavenJarFileResourceLoader(private val artifact: Artifact) :
     adv.getOriginalFile() ?: throw PluginMavenException("无法正确定位artifact的本地文件位置：{}", artifact.coordinate)
   }) {
 
-  // constructor(coordinate: String) : this(Mavens.parseCoordinate(coordinate))
-
   init {
     throwRuntimeUnless(artifact.isJarFile()) {
       PluginMavenException("只能处理Jar文件")
@@ -22,15 +20,23 @@ class MavenJarFileResourceLoader(private val artifact: Artifact) :
   }
 
   override fun associates(): List<URL> {
-    // 先看同目录下有没有pom文件
-    // val pomFileNameInSameDir: String = file.name.dropLastWhile { it == '.' } + MAVEN_POM_FILE_EXTENSION
-    // val pomFileInSameDir = File(file.parentFile, pomFileNameInSameDir)
     val advancedArtifact = artifact.advanced().also {
       it.downloadIfNecessary()
     }
 
     if (advancedArtifact.getOriginalFile()?.exists() == true) {
-      return MavenPomFileResourceLoader(artifact).associates()
+      val pomArtifact = with(artifact) {
+        Artifact(
+          groupId,
+          artifactId,
+          version,
+          Artifact.Packaging.POM,
+          null,
+          artifact.pomFileSource,
+          artifact.pomFileContent
+        )
+      }
+      return MavenPomFileResourceLoader(pomArtifact).associates()
     }
 
     // 找JAR包中的POM文件

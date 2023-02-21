@@ -8,7 +8,6 @@ import java.util.*
  */
 object Publisher {
 
-  // private lateinit var provider: Function<Class<out Publishable>, Publishable?>
   private lateinit var provider: PublisherProvider
 
   /**

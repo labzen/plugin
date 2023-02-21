@@ -2,7 +2,6 @@ package cn.labzen.plugin.broker
 
 import cn.labzen.plugin.api.broker.Plugin
 import cn.labzen.plugin.broker.event.EventDispatcher
-import cn.labzen.plugin.broker.event.SpecificSubscribe
 import cn.labzen.plugin.broker.loader.PluginLoader
 import cn.labzen.plugin.broker.maven.Mavens
 import cn.labzen.plugin.broker.resource.JarFileResourceLoader
@@ -10,6 +9,7 @@ import cn.labzen.plugin.broker.resource.MavenDirectoryResourceLoader
 import cn.labzen.plugin.broker.resource.MavenJarFileResourceLoader
 import cn.labzen.plugin.broker.resource.ResourceLoader
 import cn.labzen.plugin.broker.specific.SpecificPlugin
+import cn.labzen.plugin.broker.specific.SpecificSubscribe
 import java.io.File
 
 class PluginBroker private constructor(private val resourceLoader: ResourceLoader) {
@@ -21,58 +21,21 @@ class PluginBroker private constructor(private val resourceLoader: ResourceLoade
    * 加载插件到容器中（JVM），并未实例化
    */
   fun load(): Plugin {
-    // loadFromResource()
-    // createConfigurator()
-    // readMountAndExtensionSchemas()
-
     loader = PluginLoader(resourceLoader)
 
     val information = loader.loadInformation()
-    // val identifierInContainer = PluginContainer.takeNewPlugin(information)
 
     loader.createClassLoaders()
     val pluggableClass = loader.loadPluggableClass()
 
-    plugin = SpecificPlugin(information, pluggableClass)
-    return plugin
-    // PluginContainer.loadedPlugin(plugin)
+    return SpecificPlugin(information, pluggableClass).also {
+      plugin = it
+    }
   }
-
-  // /**
-  //  * 插件信息
-  //  */
-  // fun information(): PluginInformation = PluginContainer.information(identifierInContainer)!!
 
   fun unload() {
     TODO("Not yet implemented")
   }
-
-  // /**
-  //  * 加载插件到容器中（JVM），并未实例化
-  //  */
-  // private fun loadFromResource() {
-  //   loader = PluginLoader(resourceLoader)
-  //
-  //   val information = loader.loadInformation()
-  //   val identifierInContainer = PluginContainer.takeNewPlugin(information)
-  //
-  //   loader.createClassLoaders()
-  //   val pluggableClass = loader.loadPluggableClass()
-  //
-  //   plugin = SpecificPlugin(identifierInContainer, information, pluggableClass)
-  //   PluginContainer.loadedPlugin(plugin)
-  // }
-
-  // private fun createConfigurator() {
-  //   configurator = PluginConfigurator(pluggableClass).also {
-  //     it.scanConfigurableInterfaces()
-  //   }
-  // }
-
-  // private fun readMountAndExtensionSchemas() {
-  //   mountSchemas = PluginMount.scanMountableClasses(pluggableClass)
-  //   extensionSchemas = PluginExtension.scanExtensibleClasses(pluggableClass)
-  // }
 
   companion object {
 

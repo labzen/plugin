@@ -4,14 +4,19 @@ import cn.labzen.cells.core.kotlin.throwRuntimeUnless
 import cn.labzen.plugin.api.bean.Outcome
 import cn.labzen.plugin.api.bean.schema.ExtensionSchema
 import cn.labzen.plugin.api.bean.schema.MountSchema
+import cn.labzen.plugin.api.bean.schema.PublishSchema
+import cn.labzen.plugin.api.bean.schema.SubscribeSchema
 import cn.labzen.plugin.api.broker.*
 import cn.labzen.plugin.api.dev.Pluggable
-import cn.labzen.plugin.api.dev.annotation.Configured
 import cn.labzen.plugin.broker.event.EventDispatcher
-import cn.labzen.plugin.broker.event.SpecificPublish
-import cn.labzen.plugin.broker.event.SpecificSubscribe
 import cn.labzen.plugin.broker.exception.PluginInstantiateException
 import cn.labzen.plugin.broker.exception.PluginOperationException
+import cn.labzen.plugin.broker.specific.reflection.PluginReflector
+import cn.labzen.plugin.broker.specific.reflection.PluginReflector.Companion.CONFIGURABLE_CLASSES
+import cn.labzen.plugin.broker.specific.reflection.PluginReflector.Companion.EXTENSIBLE_CLASSES
+import cn.labzen.plugin.broker.specific.reflection.PluginReflector.Companion.MOUNTABLE_CLASSES
+import cn.labzen.plugin.broker.specific.reflection.PluginReflector.Companion.PUBLISHABLE_CLASSES
+import cn.labzen.plugin.broker.specific.reflection.PluginReflector.Companion.SUBSCRIBABLE_CLASSES
 import cn.labzen.plugin.broker.xml.PluginInformation
 import java.lang.reflect.InvocationTargetException
 
@@ -20,19 +25,26 @@ class SpecificPlugin internal constructor(
   private val pluggableClass: Class<Pluggable>
 ) : Plugin {
 
-  // todo 已经摒弃掉容器的概念了，还要一个唯一标识，有没有必要？
-  val identifier = "${information.name}@${information.version}"
-  private val configurator = SpecificConfigurator(pluggableClass).also {
-    it.scanConfigurableInterfaces()
-  }
-  private val mountSchemas = SpecificMount.scanMountableClasses(pluggableClass)
-  private val extensionSchemas = SpecificExtension.scanExtensibleClasses(pluggableClass)
-  private val publishSchemas = SpecificPublish.scanPublishableInterfaces(pluggableClass)
-  private val subscribeSchemas = SpecificSubscribe.scanPluginSubscribable(pluggableClass)
+  private val configurator: SpecificConfigurator
+  private val mountSchemas: Map<String, MountSchema>
+  private val extensionSchemas: Map<String, ExtensionSchema>
+  private val publishSchemas: Map<String, PublishSchema>
+  private val subscribeSchemas: Map<String, SubscribeSchema>
 
   private lateinit var pluggableInstance: Pluggable
   private var prepared = false
   private var activated = false
+
+  init {
+    val reflector = PluginReflector(pluggableClass)
+    reflector.scan()
+
+    configurator = SpecificConfigurator(reflector.get(CONFIGURABLE_CLASSES)!!)
+    mountSchemas = SpecificMount.scanMountableClasses(reflector.get(MOUNTABLE_CLASSES)!!)
+    extensionSchemas = SpecificExtension.scanExtensibleClasses(reflector.get(EXTENSIBLE_CLASSES)!!)
+    publishSchemas = SpecificPublish.scanPublishableInterfaces(reflector.get(PUBLISHABLE_CLASSES)!!)
+    subscribeSchemas = SpecificSubscribe.scanPluginSubscribable(reflector.get(SUBSCRIBABLE_CLASSES)!!)
+  }
 
   override fun information(): Information = information
 
@@ -60,19 +72,7 @@ class SpecificPlugin internal constructor(
       EventDispatcher.registerSubscribe(specificSubscribe)
     }
 
-    // 注入配置接口实例
-    pluggableInstance.javaClass.fields.filter {
-      it.isAnnotationPresent(Configured::class.java)
-    }.forEach {
-      val configurationClass = it.type
-      try {
-        val proxy = configurator.getProxy(configurationClass)
-        it.isAccessible = true
-        it.set(pluggableInstance, proxy)
-      } catch (e: Exception) {
-        // todo 打日志  配置无法注入
-      }
-    }
+    configurator.injectTo(pluggableInstance)
 
     val canActiveOutcome = pluggableInstance.canActive()
     prepared = canActiveOutcome.status == Outcome.PluginOperateStatus.SUCCESS
@@ -126,7 +126,7 @@ class SpecificPlugin internal constructor(
       throw PluginOperationException("扩展服务必须通过挂载组件扩展 - ${extensionSchema.mountedFiled}")
     }
 
-    return SpecificExtension(extensionSchema)
+    return SpecificExtension(configurator, extensionSchema, null)
   }
 
   override fun mounts(): List<MountSchema> = mountSchemas.values.toList()
@@ -138,6 +138,6 @@ class SpecificPlugin internal constructor(
     val applicableExtensionSchemas = extensionSchemas.filter {
       it.value.mountedFiled?.type == mountSchema.mountableClass
     }
-    return SpecificMount(mountSchema, applicableExtensionSchemas)
+    return SpecificMount(configurator, mountSchema, applicableExtensionSchemas)
   }
 }

@@ -7,6 +7,4 @@ interface Extension {
   fun setParameter(name: String, value: Any?)
 
   fun invoke(): Outcome
-
-  fun <T> getResult(name: String): T?
 }

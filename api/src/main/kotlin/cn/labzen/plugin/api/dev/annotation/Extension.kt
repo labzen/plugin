@@ -9,7 +9,7 @@ package cn.labzen.plugin.api.dev.annotation
  *
  *   @Mounted
  *   private AliYunOssAccount ossAccount;
- *   @ExtensionParameter(description = "要上传的本地文件地址", require = true)
+ *   @ExtensionProperty(description = "要上传的本地文件地址", required = true)
  *   private String filePath;
  *
  *   public void execute() {
@@ -29,5 +29,6 @@ package cn.labzen.plugin.api.dev.annotation
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Extension(
   val name: String,
-  val description: String
+  val description: String,
+  val results: Array<ExtensionProperty> = []
 )

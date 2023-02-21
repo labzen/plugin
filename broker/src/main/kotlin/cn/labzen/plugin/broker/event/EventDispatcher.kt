@@ -1,6 +1,8 @@
 package cn.labzen.plugin.broker.event
 
 import cn.labzen.plugin.api.event.Publishable
+import cn.labzen.plugin.broker.specific.SpecificPublish
+import cn.labzen.plugin.broker.specific.SpecificSubscribe
 
 internal object EventDispatcher {
 

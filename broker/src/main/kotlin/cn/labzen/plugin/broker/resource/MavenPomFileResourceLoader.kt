@@ -14,23 +14,22 @@ class MavenPomFileResourceLoader(private val artifact: Artifact) :
   PomFileResourceLoader(artifact.let {
     val adv = it.advanced()
     adv.downloadIfNecessary()
+
     adv.getOriginalFile() ?: throw PluginMavenException(
       "无法正确定位artifact pom的本地文件位置：{}",
       artifact.coordinate
     )
   }) {
 
-  // constructor(coordinate: String) : this(Mavens.parseCoordinate(coordinate))
-
-  // private val cache = ArtifactCache()
+  private val model: Model
   private var parentResourceLoader: MavenPomFileResourceLoader? = null
-  private lateinit var model: Model
+
+  init {
+    artifact.pomFileContent ?: throw PluginMavenException("无法获取artifact pom信息：{}", artifact.coordinate)
+    model = Mavens.parsePomModel(artifact.pomFileContent!!)
+  }
 
   override fun associates(): List<URL> {
-    artifact.pomContent ?: throw PluginMavenException("无法获取artifact pom信息：{}", artifact.coordinate)
-
-    model = Mavens.parsePomModel(artifact.pomContent!!)
-
     return model.dependencies.filter(this::shouldBeGet).flatMap(this::getAssociatedDependency)
   }
 
@@ -309,7 +308,7 @@ class MavenPomFileResourceLoader(private val artifact: Artifact) :
       val tempPomFile = File.createTempFile("pom", ".pom")
       Files.writeString(tempPomFile.toPath(), content)
 
-      val artifact = Mavens.parsePomContentToArtifact(content)
+      val artifact = Mavens.parsePomFileToArtifact(tempPomFile)
       return MavenPomFileResourceLoader(artifact)
     }
   }

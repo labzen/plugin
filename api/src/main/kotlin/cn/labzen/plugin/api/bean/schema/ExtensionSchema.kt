@@ -8,6 +8,6 @@ data class ExtensionSchema(
   val name: String,
   val description: String,
   val inputParameters: List<DataFieldSchema>,
-  val outputParameters: List<DataFieldSchema>,
+  val outputParameters: List<DataSchema>,
   val mountedFiled: Field?
 )

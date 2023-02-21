@@ -5,7 +5,6 @@ import cn.labzen.plugin.broker.exception.PluginMavenException
 import cn.labzen.plugin.broker.maven.Mavens
 import java.io.File
 import java.net.URL
-import java.nio.file.Files
 
 class MavenDirectoryResourceLoader(directory: File) : DirectoryResourceLoader(directory) {
 
@@ -18,8 +17,7 @@ class MavenDirectoryResourceLoader(directory: File) : DirectoryResourceLoader(di
       PluginMavenException("Maven项目POM文件不存在：{}", pomFile.absoluteFile)
     }
 
-    val pomContent = Files.readString(pomFile.toPath())
-    val pomArtifact = Mavens.parsePomContentToArtifact(pomContent, pomFile.toURI().toURL())
+    val pomArtifact = Mavens.parsePomFileToArtifact(pomFile)
     pomResourceLoader = MavenPomFileResourceLoader(pomArtifact)
   }
 
