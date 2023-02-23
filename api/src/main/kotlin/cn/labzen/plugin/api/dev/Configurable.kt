@@ -10,11 +10,12 @@ import cn.labzen.plugin.api.dev.annotation.Configured
  *
  * 需要读取配置接口定义的配置项时，参考 [Configured]
  * ```java
+ * @Configuration(namespace = "net")
  * public interface ExamplePluginConfiguration extends Configurable {
  *
  *   // 配置key为 'host'，需要返回字符串的值
  *   @ConfigurationItem(description = "三方服务主机地址", require = false)
- *   String getHost();
+ *   String host();
  * }
  * ```
  */

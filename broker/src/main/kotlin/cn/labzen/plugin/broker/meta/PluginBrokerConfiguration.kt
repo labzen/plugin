@@ -11,7 +11,7 @@ interface PluginBrokerConfiguration {
    * 应用层的项目根路径地址
    */
   @Item(path = "root", logLevel = Level.INFO)
-  fun applicationPackages(): String
+  fun applicationPackage(): String
 
   /**
    * 指定Maven中间件的HOME地址

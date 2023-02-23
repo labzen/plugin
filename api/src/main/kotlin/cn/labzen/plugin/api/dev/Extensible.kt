@@ -7,24 +7,20 @@ import cn.labzen.plugin.api.bean.Outcome
  *
  * 示例：
  * ```java
+ * @Extension(name = "hello_user", description = "跟用户打招呼",
+ *            results = {
+ *              @ExtensionProperty(name="message", type = String.class, description = "信息")
+ *            })
  * public class ExamplePluginExtension implements Extensible {
  *
+ *   @ExtensionProperty(description = "用户名", require = true)
  *   private String username;
- *   private String result;
- *
- *   @ExtensionParameter(description = "用户名", require = true)
- *   public void setUsername(String username) {
- *     this.username = username;
- *   }
- *
- *   public String result() {
- *     return result;
- *   }
  *
  *   @Override
- *   public void execute() {
+ *   public Outcome execute() {
  *     // 插件功能扩展的执行部分
- *     this.result = "Hello World: " + this.username;
+ *     Values values = new Values("message", "Hi U: " + this.username);
+ *     return Outcome.success(values);
  *   }
  * }
  * ```

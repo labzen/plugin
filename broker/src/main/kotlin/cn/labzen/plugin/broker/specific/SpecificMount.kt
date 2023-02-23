@@ -4,6 +4,7 @@ import cn.labzen.cells.core.kotlin.throwRuntimeUnless
 import cn.labzen.cells.core.utils.Strings
 import cn.labzen.plugin.api.bean.Values
 import cn.labzen.plugin.api.bean.schema.DataFieldSchema
+import cn.labzen.plugin.api.bean.schema.DataSchema
 import cn.labzen.plugin.api.bean.schema.ExtensionSchema
 import cn.labzen.plugin.api.bean.schema.MountSchema
 import cn.labzen.plugin.api.broker.Extension
@@ -79,7 +80,7 @@ class SpecificMount internal constructor(
     private fun parseMountableClass(mountableClass: Class<Mountable>): MountSchema {
       val mountAnnotation = mountableClass.getAnnotation(MountAnnotation::class.java)
       val declarations = mountAnnotation.declarations.map {
-        Pair(it.name, it.description)
+        DataSchema(it.name, Any::class.java, it.description, true)
       }
 
       val arguments = ReflectionUtils.getAllFields(mountableClass, Predicate {

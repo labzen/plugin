@@ -2,6 +2,7 @@ package cn.labzen.plugin.broker.spring
 
 import cn.labzen.meta.spring.SpringApplicationContextInitializerOrder
 import cn.labzen.plugin.broker.PluginBroker
+import cn.labzen.plugin.broker.event.PublisherDelegator
 import cn.labzen.plugin.broker.maven.Mavens
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
@@ -14,6 +15,7 @@ class LabzenPluginBrokerInitializer : ApplicationContextInitializer<Configurable
 
   override fun initialize(applicationContext: ConfigurableApplicationContext) {
     Mavens.initialize()
+    PublisherDelegator.init()
     PluginBroker.prepareApplicationSubscribes()
   }
 }

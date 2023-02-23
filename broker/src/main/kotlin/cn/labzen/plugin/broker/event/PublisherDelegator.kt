@@ -5,7 +5,7 @@ import cn.labzen.plugin.api.event.helper.Publisher
 
 internal object PublisherDelegator : Publisher.PublisherProvider {
 
-  init {
+  internal fun init() {
     val providerField = Publisher::class.java.getDeclaredField("provider")
     providerField.isAccessible = true
     providerField.set(Publisher, this)

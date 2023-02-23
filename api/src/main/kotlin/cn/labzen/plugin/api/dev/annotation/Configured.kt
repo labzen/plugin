@@ -15,7 +15,7 @@ import cn.labzen.plugin.api.dev.Pluggable
  *
  *   @Override
  *   public boolean canActive() {
- *     return configuration.getHost() != null;
+ *     return configuration.host() != null;
  *   }
  *
  *   ....

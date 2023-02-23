@@ -1,6 +1,5 @@
 package cn.labzen.plugin.broker.specific
 
-import cn.labzen.cells.core.utils.Strings
 import cn.labzen.plugin.api.bean.schema.DataMethodSchema
 import cn.labzen.plugin.api.bean.schema.PublishSchema
 import cn.labzen.plugin.api.event.Publishable
@@ -26,9 +25,9 @@ class SpecificPublish internal constructor(internal val schema: PublishSchema) :
     javassistProxy as Publishable
   }
 
-  override fun invoke(self: Any, thisMethod: Method, proceed: Method, args: Array<out Any>?): Any? {
+  override fun invoke(self: Any?, thisMethod: Method, proceed: Method?, args: Array<out Any?>): Any? {
     val methodSchema = schema.events[thisMethod.toString()] ?: return null
-    EventDispatcher.eventPublished(schema.name, schema.version, methodSchema.name, args)
+    EventDispatcher.eventPublished(thisMethod, schema.name, schema.version, methodSchema.name, args)
     return null
   }
 
@@ -47,10 +46,8 @@ class SpecificPublish internal constructor(internal val schema: PublishSchema) :
         it.isAnnotationPresent(PublishEvent::class.java)
       }).map {
         val eventAnnotation = it.getAnnotation(PublishEvent::class.java)
-        val snakeName = eventAnnotation.name.ifBlank {
-          Strings.snakeCase(it.name)
-        }
-        DataMethodSchema(it, snakeName, eventAnnotation.description)
+        val eventName = eventAnnotation.name.ifBlank { it.name }
+        DataMethodSchema(it, eventName, eventAnnotation.description)
       }.associateBy { it.method.toString() }
 
       return PublishSchema(

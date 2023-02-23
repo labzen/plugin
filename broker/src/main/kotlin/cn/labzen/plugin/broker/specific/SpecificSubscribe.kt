@@ -1,6 +1,5 @@
 package cn.labzen.plugin.broker.specific
 
-import cn.labzen.cells.core.utils.Strings
 import cn.labzen.meta.Labzens
 import cn.labzen.plugin.api.bean.schema.DataMethodSchema
 import cn.labzen.plugin.api.bean.schema.SubscribeSchema
@@ -28,7 +27,7 @@ class SpecificSubscribe internal constructor(internal val schema: SubscribeSchem
       val configuration = Labzens.configurationWith(PluginBrokerConfiguration::class.java)
 
       val configurationBuilder = ConfigurationBuilder()
-        .forPackages(configuration.applicationPackages())
+        .forPackages(configuration.applicationPackage())
         .addScanners(Scanners.TypesAnnotated)
 
       val reflections = Reflections(configurationBuilder)
@@ -60,11 +59,9 @@ class SpecificSubscribe internal constructor(internal val schema: SubscribeSchem
         it.isAnnotationPresent(SubscribeEvent::class.java)
       }).map {
         val eventAnnotation = it.getAnnotation(SubscribeEvent::class.java)
-        val snakeName = eventAnnotation.name.ifBlank {
-          Strings.snakeCase(it.name)
-        }
-        DataMethodSchema(it, snakeName)
-      }.associateBy { it.method.toString() }
+        val eventName = eventAnnotation.name.ifBlank { it.name }
+        DataMethodSchema(it, eventName)
+      }.associateBy { it.name }
 
       return SubscribeSchema(
         subscribableClass,
