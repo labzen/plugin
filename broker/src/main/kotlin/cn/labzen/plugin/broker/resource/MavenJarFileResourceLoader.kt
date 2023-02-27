@@ -32,7 +32,7 @@ class MavenJarFileResourceLoader(private val artifact: Artifact) :
           version,
           Artifact.Packaging.POM,
           null,
-          artifact.pomFileSource,
+          artifact.pomFileSourcePath,
           artifact.pomFileContent
         )
       }

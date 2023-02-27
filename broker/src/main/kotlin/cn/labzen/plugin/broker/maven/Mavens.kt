@@ -77,11 +77,11 @@ object Mavens {
   fun coordinateString(groupId: String, artifactId: String, version: String): String =
     "$groupId:$artifactId:$version"
 
-  fun parsePomContentToArtifact(content: String, originalPomFile: URL? = null): Artifact {
-    val model = parsePomModel(content)
-    val packaging = Artifact.Packaging.parse(model.packaging)
-    return Artifact(model.artifactId, model.groupId, model.version, packaging, null, originalPomFile)
-  }
+  // fun parsePomContentToArtifact(content: String, originalPomFile: URL? = null): Artifact {
+  //   val model = parsePomModel(content)
+  //   val packaging = Artifact.Packaging.parse(model.packaging)
+  //   return Artifact(model.artifactId, model.groupId, model.version, packaging, null, originalPomFile)
+  // }
 
   fun parsePomFileToArtifact(file: File): Artifact {
     val content = Files.readString(file.toPath())
@@ -92,7 +92,7 @@ object Mavens {
       model.version,
       Artifact.Packaging.POM,
       null,
-      file.toURI().toURL(),
+      file.absolutePath,
       content
     )
   }

@@ -1,6 +1,7 @@
 package cn.labzen.plugin.broker.specific
 
 import cn.labzen.cells.core.kotlin.throwRuntimeUnless
+import cn.labzen.cells.core.utils.Randoms
 import cn.labzen.cells.core.utils.Strings
 import cn.labzen.plugin.api.bean.Values
 import cn.labzen.plugin.api.bean.schema.DataFieldSchema
@@ -25,6 +26,9 @@ class SpecificMount internal constructor(
 
   private val argumentValues = Values.withSchema(schema.arguments)
   private lateinit var instance: Mountable
+  private val symbol = Randoms.string(16, Randoms.NUMBERS_AND_LETTERS_LOWER_CASE)
+
+  override fun getSymbol(): String = symbol
 
   override fun setArgument(name: String, value: Any) {
     argumentValues[name] = value
@@ -88,7 +92,7 @@ class SpecificMount internal constructor(
       }).map {
         val snakeName = Strings.snakeCase(it.name)
         val argumentAnnotation = it.getAnnotation(MountArgument::class.java)
-        DataFieldSchema(it,snakeName, argumentAnnotation.description, argumentAnnotation.required)
+        DataFieldSchema(it, snakeName, argumentAnnotation.description, argumentAnnotation.required)
       }
 
       return MountSchema(
