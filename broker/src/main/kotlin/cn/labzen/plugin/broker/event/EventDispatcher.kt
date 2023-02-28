@@ -1,6 +1,9 @@
 package cn.labzen.plugin.broker.event
 
+import cn.labzen.plugin.api.broker.Mount
+import cn.labzen.plugin.api.dev.Mountable
 import cn.labzen.plugin.api.event.Publishable
+import cn.labzen.plugin.broker.specific.SpecificMount
 import cn.labzen.plugin.broker.specific.SpecificPublish
 import cn.labzen.plugin.broker.specific.SpecificSubscribe
 import java.lang.reflect.Method
@@ -12,7 +15,7 @@ internal object EventDispatcher {
    *
    * key: 发布者类（发布者name必须为确切的名称）
    */
-  private val publishSpecificsByClass = mutableMapOf<Class<out Publishable>, SpecificPublish>()
+  private val publishSpecificsByClass = mutableMapOf<Class<out Publishable<*>>, SpecificPublish>()
 
   /**
    * 订阅者实例集合
@@ -42,7 +45,7 @@ internal object EventDispatcher {
     subscriberNames.addAll(matchedSubscriberNames)
   }
 
-  fun getPublish(cls: Class<out Publishable>) =
+  fun getPublish(cls: Class<out Publishable<*>>) =
     publishSpecificsByClass[cls]
 
   @Synchronized
@@ -73,6 +76,21 @@ internal object EventDispatcher {
     eventName: String,
     args: Array<out Any?>
   ) {
+    eventPublishedWithMountable(null, publishMethod, publisherName, publisherVersion, eventName, args)
+  }
+
+  fun eventPublishedWithMountable(
+    mountable: Mountable? = null,
+    publishMethod: Method,
+    publisherName: String,
+    publisherVersion: String,
+    eventName: String,
+    args: Array<out Any?>
+  ) {
+    // 获取到事件发布相关的挂载物实例，所对应的上层应用（宿主）具体挂载物
+    val mount = mountable?.let { SpecificMount.MOUNTABLE_REVERSE_INDEXES[it] }
+
+    // 找到匹配发布者名称的所有订阅者
     val hittingSubscribes = mutableSetOf<SpecificSubscribe>()
     publishAndSubscribePatternMap[publisherName]?.forEach { subscriberName ->
       subscribeSpecificsByName[subscriberName]?.filter {
@@ -82,29 +100,145 @@ internal object EventDispatcher {
       }
     }
 
-    var subscribeWithMapArguments: MutableMap<String, Any?>? = null
-    hittingSubscribes.forEach { subscribe ->
-      val eventMethods = subscribe.schema.events
-      eventMethods.forEach { (en, dms) ->
-        if (eventName == en) {
-          dms.method.invoke(subscribe.instance, *args)
-        } else if (en == "*" || eventName.matches(Regex(en))) {
-          if (dms.method.parameterCount == 1 && Map::class.java.isAssignableFrom(dms.method.parameters[0].type)) {
-            if (subscribeWithMapArguments == null) {
-              subscribeWithMapArguments = mutableMapOf<String, Any?>().also {
-                it["<<publisher name>>"] = publisherName
-                it["<<publisher version>>"] = publisherVersion
-                it["<<event name>>"] = eventName
-                publishMethod.parameters.forEachIndexed { index, parameter ->
-                  it[parameter.name] = args[index]
-                }
-              }
-            }
-
-            dms.method.invoke(subscribe.instance, subscribeWithMapArguments)
-          }
-        }
-      }
+    hittingSubscribes.forEach {
+      hitSubscribeEventMethod(it, publishMethod, eventName, publisherName, publisherVersion, mount, args)
     }
   }
+
+  /**
+   * 在订阅者内匹配相应的事件
+   */
+  private fun hitSubscribeEventMethod(
+    subscribe: SpecificSubscribe,
+    publishMethod: Method,
+    publishEventName: String,
+    publisherName: String,
+    publisherVersion: String,
+    mount: Mount?,
+    args: Array<out Any?>
+  ) {
+    val eventMethods = subscribe.schema.events
+    eventMethods.forEach { (subscribeEventName, subscribeMethodSchema) ->
+      if (publishEventName == subscribeEventName) {
+        try {
+          invokeEventMethodWithExplicitName(publishMethod, subscribeMethodSchema.method, subscribe, mount, args)
+        } catch (e: Exception) {
+          // ignore
+        }
+      } else if (subscribeEventName == "*" || publishEventName.matches(Regex(subscribeEventName))) {
+        // 如有使用 '*' 来匹配事件名的，参数转为Map
+        val subscribeWithMapArguments = mutableMapOf<String, Any?>().also {
+          it["<<publisher name>>"] = publisherName
+          it["<<publisher version>>"] = publisherVersion
+          it["<<event name>>"] = publishEventName
+          publishMethod.parameters.forEachIndexed { index, parameter ->
+            it[parameter.name] = args[index]
+          }
+        }
+
+        try {
+          invokeEventMethodWithInconclusiveName(
+            publishMethod,
+            subscribeMethodSchema.method,
+            subscribe,
+            mount,
+            args,
+            subscribeWithMapArguments
+          )
+        } catch (e: Exception) {
+          // ignore
+        }
+      }
+
+    }
+  }
+
+  /**
+   * 明确的事件名
+   */
+  private fun invokeEventMethodWithExplicitName(
+    publishMethod: Method,
+    subscribeMethod: Method,
+    subscribe: SpecificSubscribe,
+    mount: Mount?,
+    args: Array<out Any?>
+  ) {
+    val hasMountArgument = if (subscribeMethod.parameterCount > 0) {
+      subscribeMethod.parameterTypes[0] == Mount::class.java
+    } else false
+    val arguments = if (hasMountArgument) {
+      arrayOf(mount, *args)
+    } else args
+
+    try {
+      subscribeMethod.invoke(subscribe.instance, *arguments)
+    } catch (e: IllegalArgumentException) {
+      tryInvokeEventMethodByPreciseArguments(publishMethod, subscribeMethod, subscribe, mount, args)
+    }
+  }
+
+  /**
+   * 通过 '*' 或 使用正则表达式匹配事件名
+   */
+  private fun invokeEventMethodWithInconclusiveName(
+    publishMethod: Method,
+    subscribeMethod: Method,
+    subscribe: SpecificSubscribe,
+    mount: Mount?,
+    args: Array<out Any?>,
+    mapArguments: MutableMap<String, Any?>
+  ) {
+    if (subscribeMethod.parameterCount == 1) {
+      val firstArgumentType = subscribeMethod.parameterTypes[0]
+      if (Map::class.java.isAssignableFrom(firstArgumentType)) {
+        // 使用 Map 参数接收，一般用于正则表达式或'*'通配符匹配事件名的情况
+        subscribeMethod.invoke(subscribe.instance, mapArguments)
+        return
+      } else if (Mount::class.java == firstArgumentType) {
+        // 只接收发布事件时的关联挂载物，虽然可以，但没啥意义
+        subscribeMethod.invoke(subscribe.instance, mount)
+        return
+      }
+    } else if (subscribeMethod.parameterCount == 2) {
+      if (Mount::class.java == subscribeMethod.parameterTypes[0] &&
+        Map::class.java.isAssignableFrom(subscribeMethod.parameterTypes[1])
+      ) {
+        subscribeMethod.invoke(subscribe.instance, mount, mapArguments)
+        return
+      }
+    }
+
+    tryInvokeEventMethodByPreciseArguments(publishMethod, subscribeMethod, subscribe, mount, args)
+  }
+
+  private fun tryInvokeEventMethodByPreciseArguments(
+    publishMethod: Method,
+    subscribeMethod: Method,
+    subscribe: SpecificSubscribe,
+    mount: Mount?,
+    args: Array<out Any?>
+  ) {
+    val hasMountArgument = if (subscribeMethod.parameterCount > 0) {
+      subscribeMethod.parameterTypes[0] == Mount::class.java
+    } else false
+    var subscribeMethodArgumentStep = if (hasMountArgument) 1 else 0
+
+    publishMethod.parameterTypes.forEach { publishArgumentType ->
+      if (subscribeMethodArgumentStep >= subscribeMethod.parameterCount) {
+        return
+      }
+
+      val subscribeArgumentType = subscribeMethod.parameterTypes[subscribeMethodArgumentStep++]
+      if (subscribeArgumentType != publishArgumentType) {
+        return
+      }
+    }
+
+    val arguments = if (hasMountArgument) {
+      arrayOf(mount, *args)
+    } else args
+
+    subscribeMethod.invoke(subscribe.instance, *arguments)
+  }
+
 }

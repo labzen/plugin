@@ -60,7 +60,9 @@ class SpecificMount internal constructor(
       throw PluginInstantiateException("无法对挂载组件注入参数 - ${schema.mountableClass}")
     }
 
-    instance.onMounted()
+    instance.onMounted(symbol)
+
+    MOUNTABLE_REVERSE_INDEXES[instance] = this
   }
 
   override fun extending(extensibleName: String): Extension {
@@ -74,6 +76,8 @@ class SpecificMount internal constructor(
   }
 
   companion object {
+
+    internal val MOUNTABLE_REVERSE_INDEXES = mutableMapOf<Mountable, Mount>()
 
     internal fun scanMountableClasses(classes: List<Class<*>>): Map<String, MountSchema> {
       @Suppress("UNCHECKED_CAST")
@@ -103,5 +107,6 @@ class SpecificMount internal constructor(
         arguments
       )
     }
+
   }
 }

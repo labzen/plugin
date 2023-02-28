@@ -14,12 +14,12 @@ object Publisher {
    * 随时获取插件时间发布器实例
    */
   @JvmStatic
-  fun <P : Publishable> instance(publishable: Class<P>): Optional<P> =
+  fun <P : Publishable<*>> instance(publishable: Class<P>): Optional<P> =
     // 只是个壳，具体实现在broker中
     Optional.ofNullable(provider.getPublisherInstance(publishable))
 
   interface PublisherProvider {
 
-    fun <P : Publishable> getPublisherInstance(publishableClass: Class<out Publishable>): P?
+    fun <P : Publishable<*>> getPublisherInstance(publishableClass: Class<out Publishable<*>>): P?
   }
 }

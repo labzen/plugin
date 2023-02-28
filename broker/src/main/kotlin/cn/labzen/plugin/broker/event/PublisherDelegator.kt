@@ -12,6 +12,6 @@ internal object PublisherDelegator : Publisher.PublisherProvider {
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun <P : Publishable> getPublisherInstance(publishableClass: Class<out Publishable>): P? =
+  override fun <P : Publishable<*>> getPublisherInstance(publishableClass: Class<out Publishable<*>>): P? =
     EventDispatcher.getPublish(publishableClass)?.instance as P?
 }
