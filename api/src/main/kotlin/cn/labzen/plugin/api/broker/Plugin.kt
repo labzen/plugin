@@ -50,9 +50,14 @@ interface Plugin {
   fun extensions(): List<ExtensionSchema>
 
   /**
-   * 获得一个服务扩展
+   * 获得一个新的服务扩展实例
    */
   fun extending(extensibleName: String): Extension
+
+  /**
+   * 获得一个服务扩展单例
+   */
+  fun extendingSingleton(extensibleName: String): Extension
 
   /**
    * 插件所有的可挂载组件

@@ -129,6 +129,9 @@ class SpecificPlugin internal constructor(
     return SpecificExtension(configurator, extensionSchema, null)
   }
 
+  override fun extendingSingleton(extensibleName: String): Extension =
+    SpecificExtension.hold(extensibleName) { extending(extensibleName) }
+
   override fun mounts(): List<MountSchema> = mountSchemas.values.toList()
 
   override fun mounting(mountableName: String): Mount {

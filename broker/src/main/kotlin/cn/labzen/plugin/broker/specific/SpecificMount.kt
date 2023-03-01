@@ -75,6 +75,9 @@ class SpecificMount internal constructor(
     return SpecificExtension(configurator, extensionSchema, instance)
   }
 
+  override fun extendingSingleton(extensibleName: String): Extension =
+    SpecificExtension.hold(extensibleName, symbol) { extending(extensibleName) }
+
   companion object {
 
     internal val MOUNTABLE_REVERSE_INDEXES = mutableMapOf<Mountable, Mount>()

@@ -18,5 +18,13 @@ interface Mount {
    */
   fun done()
 
+  /**
+   * 获得一个新的服务扩展实例
+   */
   fun extending(extensibleName: String): Extension
+
+  /**
+   * 获得一个服务扩展单例，该单例只针对本挂载物存在，即每一个挂载物对相同名称的扩展都拥有一个唯一的服务扩展单例
+   */
+  fun extendingSingleton(extensibleName: String): Extension
 }

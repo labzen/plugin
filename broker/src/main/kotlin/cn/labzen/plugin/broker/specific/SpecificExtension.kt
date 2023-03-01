@@ -15,10 +15,11 @@ import cn.labzen.plugin.broker.exception.PluginInstantiateException
 import cn.labzen.plugin.broker.exception.PluginResourceLoadException
 import org.reflections.ReflectionUtils
 import java.util.function.Predicate
+import java.util.function.Supplier
 import cn.labzen.plugin.api.dev.annotation.Extension as ExtensionAnnotation
 
 class SpecificExtension internal constructor(
-  private val configurator: SpecificConfigurator,
+  configurator: SpecificConfigurator,
   private val schema: ExtensionSchema,
   private val mountableInstance: Mountable? = null
 ) : Extension {
@@ -84,6 +85,17 @@ class SpecificExtension internal constructor(
   }
 
   companion object {
+
+    private val INSTANCE_HOLDER = mutableMapOf<InstanceHoldKey, Extension>()
+
+    internal data class InstanceHoldKey(val extensionName: String, val mountSymbol: String? = null) {
+      override fun toString(): String = "$extensionName-${mountSymbol ?: "<global>"}"
+    }
+
+    internal fun hold(extensionName: String, mountSymbol: String? = null, supplier: Supplier<Extension>) =
+      INSTANCE_HOLDER.computeIfAbsent(InstanceHoldKey(extensionName, mountSymbol)) { supplier.get() }
+
+    // ===============
 
     internal fun scanExtensibleClasses(classes: List<Class<*>>): Map<String, ExtensionSchema> {
       @Suppress("UNCHECKED_CAST")
