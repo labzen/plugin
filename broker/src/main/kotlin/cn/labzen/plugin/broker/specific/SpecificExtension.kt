@@ -13,6 +13,7 @@ import cn.labzen.plugin.api.dev.annotation.ExtensionProperty
 import cn.labzen.plugin.api.dev.annotation.Mounted
 import cn.labzen.plugin.broker.exception.PluginInstantiateException
 import cn.labzen.plugin.broker.exception.PluginResourceLoadException
+import com.google.common.collect.HashBiMap
 import org.reflections.ReflectionUtils
 import java.util.function.Predicate
 import java.util.function.Supplier
@@ -39,6 +40,15 @@ class SpecificExtension internal constructor(
 
   override fun setParameter(name: String, value: Any?) {
     inputParameterValues[name] = value
+  }
+
+  override fun destructing() {
+    INSTANCE_HOLDER.inverse().remove(this)
+    try {
+      instance.onDestructing()
+    } catch (e: Exception) {
+      // log it
+    }
   }
 
   @Synchronized
@@ -86,7 +96,7 @@ class SpecificExtension internal constructor(
 
   companion object {
 
-    private val INSTANCE_HOLDER = mutableMapOf<InstanceHoldKey, Extension>()
+    private val INSTANCE_HOLDER = HashBiMap.create<InstanceHoldKey, Extension>()
 
     internal data class InstanceHoldKey(val extensionName: String, val mountSymbol: String? = null) {
       override fun toString(): String = "$extensionName-${mountSymbol ?: "<global>"}"

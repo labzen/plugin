@@ -143,4 +143,6 @@ class SpecificPlugin internal constructor(
     }
     return SpecificMount(configurator, mountSchema, applicableExtensionSchemas)
   }
+
+  override fun publishers(): List<PublishSchema> = publishSchemas.values.toList()
 }

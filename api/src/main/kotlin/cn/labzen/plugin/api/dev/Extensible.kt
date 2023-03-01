@@ -35,7 +35,7 @@ interface Extensible {
   /**
    * 当扩展服务实例被销毁时调用
    */
-  fun destructing() {
+  fun onDestructing() {
     // do nothing
   }
 }

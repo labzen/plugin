@@ -7,7 +7,13 @@ import cn.labzen.plugin.api.bean.schema.DataSchema
  */
 interface Configurator {
 
+  /**
+   * 获取插件配置纲要
+   */
   fun schema(): List<DataSchema>
 
+  /**
+   * 设置插件配置内容
+   */
   fun configure(name: String, value: Any)
 }

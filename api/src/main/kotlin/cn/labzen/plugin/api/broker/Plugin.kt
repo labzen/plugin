@@ -3,6 +3,7 @@ package cn.labzen.plugin.api.broker
 import cn.labzen.plugin.api.bean.Outcome
 import cn.labzen.plugin.api.bean.schema.ExtensionSchema
 import cn.labzen.plugin.api.bean.schema.MountSchema
+import cn.labzen.plugin.api.bean.schema.PublishSchema
 
 /**
  * 插件代理加载插件后的插件实例映射，通过该接口来控制插件的所有操作
@@ -68,4 +69,9 @@ interface Plugin {
    * 获得一个挂载组件
    */
   fun mounting(mountableName: String): Mount
+
+  /**
+   * 插件的所有发布者以及其定义的事件
+   */
+  fun publishers(): List<PublishSchema>
 }

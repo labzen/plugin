@@ -8,7 +8,7 @@ class NopMountable : Mountable {
     // nothing
   }
 
-  override fun onUnmount() {
+  override fun onUnmounting() {
     // nothing
   }
 }

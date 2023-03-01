@@ -7,5 +7,5 @@ data class PublishSchema(
   val name: String,
   val version: String,
   val description: String,
-  val events: Map<String, DataMethodSchema>
+  val events: Map<String, EventSchema>
 )

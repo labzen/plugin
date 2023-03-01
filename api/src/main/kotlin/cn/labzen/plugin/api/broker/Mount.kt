@@ -19,6 +19,11 @@ interface Mount {
   fun done()
 
   /**
+   * 卸载本挂载物
+   */
+  fun unmounting()
+
+  /**
    * 获得一个新的服务扩展实例
    */
   fun extending(extensibleName: String): Extension

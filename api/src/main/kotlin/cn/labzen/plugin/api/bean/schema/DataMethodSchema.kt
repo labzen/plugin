@@ -2,7 +2,7 @@ package cn.labzen.plugin.api.bean.schema
 
 import java.lang.reflect.Method
 
-class DataMethodSchema(
+open class DataMethodSchema(
   val method: Method,
   name: String,
   description: String = ""

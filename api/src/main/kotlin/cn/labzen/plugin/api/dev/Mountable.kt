@@ -17,5 +17,5 @@ interface Mountable {
   /**
    * 当要卸载可挂载组件前调用
    */
-  fun onUnmount()
+  fun onUnmounting()
 }

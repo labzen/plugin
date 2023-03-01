@@ -1,8 +1,9 @@
 package cn.labzen.plugin.broker.specific
 
-import cn.labzen.plugin.api.bean.schema.DataMethodSchema
+import cn.labzen.plugin.api.bean.schema.EventSchema
 import cn.labzen.plugin.api.bean.schema.PublishSchema
 import cn.labzen.plugin.api.dev.Mountable
+import cn.labzen.plugin.api.dev.nop.NopMountable
 import cn.labzen.plugin.api.event.Publishable
 import cn.labzen.plugin.api.event.annotation.Publish
 import cn.labzen.plugin.api.event.annotation.PublishEvent
@@ -81,7 +82,9 @@ class SpecificPublish internal constructor(internal val schema: PublishSchema) :
       }).map {
         val eventAnnotation = it.getAnnotation(PublishEvent::class.java)
         val eventName = eventAnnotation.name.ifBlank { it.name }
-        DataMethodSchema(it, eventName, eventAnnotation.description)
+        val mountableClass =
+          if (eventAnnotation.mountable == NopMountable::class) null else eventAnnotation.mountable.java
+        EventSchema(it, eventName, mountableClass, eventAnnotation.description)
       }.associateBy { it.method.toString() }
 
       return PublishSchema(

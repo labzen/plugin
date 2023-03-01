@@ -6,3 +6,4 @@
 6. Maven插件，将插件及依赖包导出（方便本地载入）
 7. done 发布订阅机制，如何能够将Mount抛给订阅者
 8. done 创建一个扩展，提供property和singleton两种scope
+9. done 挂载物和服务扩展提供销毁机制

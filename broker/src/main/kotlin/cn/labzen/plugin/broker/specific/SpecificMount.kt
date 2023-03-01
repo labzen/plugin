@@ -65,6 +65,15 @@ class SpecificMount internal constructor(
     MOUNTABLE_REVERSE_INDEXES[instance] = this
   }
 
+  override fun unmounting() {
+    MOUNTABLE_REVERSE_INDEXES.remove(instance)
+    try {
+      instance.onUnmounting()
+    } catch (e: Exception) {
+      // log it
+    }
+  }
+
   override fun extending(extensibleName: String): Extension {
     throwRuntimeUnless(this::instance.isInitialized) {
       PluginOperationException("组件未完成挂载")
