@@ -13,7 +13,6 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.Reader
 import java.io.StringReader
-import java.net.URL
 import java.nio.file.Files
 
 object Mavens {
@@ -76,12 +75,6 @@ object Mavens {
 
   fun coordinateString(groupId: String, artifactId: String, version: String): String =
     "$groupId:$artifactId:$version"
-
-  // fun parsePomContentToArtifact(content: String, originalPomFile: URL? = null): Artifact {
-  //   val model = parsePomModel(content)
-  //   val packaging = Artifact.Packaging.parse(model.packaging)
-  //   return Artifact(model.artifactId, model.groupId, model.version, packaging, null, originalPomFile)
-  // }
 
   fun parsePomFileToArtifact(file: File): Artifact {
     val content = Files.readString(file.toPath())

@@ -10,8 +10,8 @@ import java.io.File
 import java.net.URL
 import java.nio.file.Files
 
-class MavenPomFileResourceLoader(private val artifact: Artifact) :
-  PomFileResourceLoader(artifact.let {
+internal class MavenPomFileResourceLoader(private val artifact: Artifact) :
+  FileResourceLoader(artifact.let {
     val adv = it.advanced()
     adv.downloadIfNecessary()
 
@@ -29,25 +29,34 @@ class MavenPomFileResourceLoader(private val artifact: Artifact) :
     model = Mavens.parsePomModel(artifact.pomFileContent!!)
   }
 
-  override fun associates(): List<URL> {
-    return model.dependencies.filter(this::shouldBeGet).flatMap(this::getAssociatedDependency)
-  }
+  override fun strictFilenamePattern(): String = STRICT_FILENAME_PATTERN
+
+  override fun associates(): Set<URL> =
+    model.dependencies
+      .filter(this::shouldBeGet)
+      .flatMap(this::getAssociatedDependency)
+      .toSet()
 
   private fun shouldBeGet(dependency: Dependency): Boolean =
-    Strings.isBlank(dependency.scope) ||
-        dependency.scope.let {
-          val scope = Artifact.Scope.parse(it)
-          scope == Artifact.Scope.COMPILE || scope == Artifact.Scope.RUNTIME || scope == Artifact.Scope.COMPILE_PLUS_RUNTIME
-        } &&
-        dependency.type.let {
-          val packaging = Artifact.Packaging.parse(it)
-          packaging == Artifact.Packaging.JAR || packaging == Artifact.Packaging.POM || packaging == Artifact.Packaging.BUNDLE
-        }
+    (Strings.isBlank(dependency.scope)
+        || dependency.scope.let {
+      val scope = Artifact.Scope.parse(it)
+      scope == Artifact.Scope.COMPILE || scope == Artifact.Scope.RUNTIME || scope == Artifact.Scope.COMPILE_PLUS_RUNTIME
+    })
+        && dependency.type.let {
+      val packaging = Artifact.Packaging.parse(it)
+      packaging == Artifact.Packaging.JAR || packaging == Artifact.Packaging.POM || packaging == Artifact.Packaging.BUNDLE
+    }
+        && dependency.optional != "true"
 
   /**
    * 获取当前工件（POM）所依赖的其他工件
    */
   private fun getAssociatedDependency(dependency: Dependency): List<URL> {
+    if (dependency.groupId == "cn.labzen") {
+      return emptyList()
+    }
+
     accurateGroupId(dependency)
     accurateArtifactId(dependency)
     accurateVersion(dependency)
@@ -301,6 +310,7 @@ class MavenPomFileResourceLoader(private val artifact: Artifact) :
     Strings.isBlank(value) || value?.matches(PROPERTY_REFERENCE_PATTERN) == true
 
   companion object {
+    private const val STRICT_FILENAME_PATTERN = "(.*\\.pom)|(pom\\.xml)"
     private const val MAVEN_PROJECT_PROPERTY_PREFIX = "project."
     private val PROPERTY_REFERENCE_PATTERN = Regex("^(.*)\\$\\{(.*)}$")
 

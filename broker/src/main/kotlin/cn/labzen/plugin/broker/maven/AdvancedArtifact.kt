@@ -46,8 +46,6 @@ class AdvancedArtifact internal constructor(private val artifact: Artifact) {
       artifact.originalSourcePath!!
     } else {
       val jarPath = artifact.originalSourcePath!!
-      // val pomPathInSameDir = jarPath.substringBeforeLast(".") + MAVEN_POM_FILE_EXTENSION
-      // URL(pomPathInSameDir)
       jarPath.substringBeforeLast(".") + MAVEN_POM_FILE_EXTENSION
     }
 

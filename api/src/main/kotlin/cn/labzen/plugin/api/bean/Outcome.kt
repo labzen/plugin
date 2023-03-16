@@ -65,7 +65,7 @@ data class Outcome internal constructor(
     EXCEPTION_THROWN,
 
     /**
-     * 执行的功能为异步，等待插件主动通知上层应用
+     * 执行的功能为异步，等待插件主动通知上层应用（宿主）
      */
     WAITING,
 

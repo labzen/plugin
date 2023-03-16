@@ -2,12 +2,15 @@ package cn.labzen.plugin.broker.specific
 
 import cn.labzen.cells.core.kotlin.throwRuntimeUnless
 import cn.labzen.plugin.api.bean.Outcome
+import cn.labzen.plugin.api.bean.Outcome.PluginOperateStatus.SUCCESS
+import cn.labzen.plugin.api.bean.Outcome.PluginOperateStatus.WARING
 import cn.labzen.plugin.api.bean.schema.ExtensionSchema
 import cn.labzen.plugin.api.bean.schema.MountSchema
 import cn.labzen.plugin.api.bean.schema.PublishSchema
 import cn.labzen.plugin.api.bean.schema.SubscribeSchema
 import cn.labzen.plugin.api.broker.*
 import cn.labzen.plugin.api.dev.Pluggable
+import cn.labzen.plugin.broker.accessor.PluginAccessors
 import cn.labzen.plugin.broker.event.EventDispatcher
 import cn.labzen.plugin.broker.exception.PluginInstantiateException
 import cn.labzen.plugin.broker.exception.PluginOperationException
@@ -22,7 +25,8 @@ import java.lang.reflect.InvocationTargetException
 
 class SpecificPlugin internal constructor(
   private val information: PluginInformation,
-  private val pluggableClass: Class<Pluggable>
+  private val pluggableClass: Class<Pluggable>,
+  // internal val resource: URL
 ) : Plugin {
 
   private val configurator: SpecificConfigurator
@@ -36,6 +40,8 @@ class SpecificPlugin internal constructor(
   private var activated = false
 
   init {
+    PluginAccessors.informLoaded(information.name, information.version, this)
+
     val reflector = PluginReflector(pluggableClass)
     reflector.scan()
 
@@ -75,7 +81,7 @@ class SpecificPlugin internal constructor(
     configurator.injectTo(pluggableInstance)
 
     val canActiveOutcome = pluggableInstance.canActive()
-    prepared = canActiveOutcome.status == Outcome.PluginOperateStatus.SUCCESS
+    prepared = canActiveOutcome.status == SUCCESS || canActiveOutcome.status == WARING
     return canActiveOutcome
   }
 
@@ -100,7 +106,10 @@ class SpecificPlugin internal constructor(
     }
 
     val prepareActiveOutcome = pluggableInstance.prepareActive()
-    activated = prepareActiveOutcome.status == Outcome.PluginOperateStatus.SUCCESS
+    activated = prepareActiveOutcome.status == SUCCESS || prepareActiveOutcome.status == WARING
+    if (activated) {
+      PluginAccessors.informActivated(information.name, information.version)
+    }
     return prepareActiveOutcome
   }
 
@@ -109,6 +118,7 @@ class SpecificPlugin internal constructor(
   }
 
   override fun inactivating(): Outcome {
+    PluginAccessors.informInactivated(information.name, information.version)
     return Outcome.success()
   }
 

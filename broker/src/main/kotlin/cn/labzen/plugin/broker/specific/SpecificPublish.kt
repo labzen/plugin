@@ -18,10 +18,6 @@ import java.util.function.Predicate
 class SpecificPublish internal constructor(internal val schema: PublishSchema) : MethodHandler {
 
   internal val instance: Publishable<*> = let {
-    // val proxyFactory = ProxyFactory()
-    // proxyFactory.interfaces = arrayOf(schema.publishableClass)
-    // val proxyClass: Class<*> = proxyFactory.createClass()
-    // val javassistProxy = proxyClass.getDeclaredConstructor().newInstance()
     val javassistProxy = createProxy()
     (javassistProxy as ProxyObject).handler = this
 

@@ -1,14 +1,20 @@
 package cn.labzen.plugin.broker.resource
 
+import cn.labzen.cells.core.kotlin.throwRuntimeUnless
 import cn.labzen.plugin.broker.exception.PluginResourceIOException
+import cn.labzen.plugin.broker.exception.PluginResourceLoadException
 import cn.labzen.plugin.broker.maven.Mavens
+import cn.labzen.plugin.broker.memoir.bean.MemoirContext
 import org.springframework.boot.loader.jar.JarFile
 import java.io.File
 import java.io.IOException
 import java.net.URL
 import java.util.jar.JarEntry
 
-open class JarFileResourceLoader(file: File) : FileResourceLoader(file) {
+internal open class JarFileResourceLoader(
+  file: File,
+  private val context: MemoirContext? = null
+) : FileResourceLoader(file) {
 
   private val jarFile = try {
     JarFile(file)
@@ -16,11 +22,21 @@ open class JarFileResourceLoader(file: File) : FileResourceLoader(file) {
     throw PluginResourceIOException(e, "插件Jar文件无法读取：{}", file.absoluteFile)
   }
 
-  override fun associates(): List<URL> =
-    jarFile.entries().toList().filter {
-      !it.isDirectory && it.name.endsWith(".jar")
-    }.map {
-      URL(fileUrl, it.name)
+  override fun associates(): Set<URL> =
+    context?.let {
+      val dependenciesDir = File(file.parentFile, context.dependencies)
+      dependenciesDir.exists().throwRuntimeUnless {
+        PluginResourceLoadException("插件 [${jarFile.name}] 的依赖包目录 [${dependenciesDir.name}] 不存在")
+      }
+      dependenciesDir.listFiles()
+        ?.filter { file -> file.isFile && file.extension == "jar" }
+        ?.map { file -> file.toURI().toURL() }?.toSet()
+    } ?: run {
+      jarFile.entries().toList().filter {
+        !it.isDirectory && it.name.endsWith(".jar")
+      }.map {
+        URL(fileUrl, it.name)
+      }.toSet()
     }
 
   protected fun findPomEntryInJar(): JarEntry? {

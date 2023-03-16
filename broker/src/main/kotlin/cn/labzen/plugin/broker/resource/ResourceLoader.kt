@@ -12,5 +12,5 @@ interface ResourceLoader {
   /**
    * 所依赖的其他资源
    */
-  fun associates(): List<URL>
+  fun associates(): Set<URL>
 }

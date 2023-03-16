@@ -6,7 +6,7 @@ import cn.labzen.plugin.broker.maven.Mavens
 import java.io.File
 import java.net.URL
 
-class MavenDirectoryResourceLoader(directory: File) : DirectoryResourceLoader(directory) {
+internal class MavenDirectoryResourceLoader(directory: File) : DirectoryResourceLoader(directory) {
 
   private val pomFile: File
   private val pomResourceLoader: MavenPomFileResourceLoader
@@ -21,7 +21,7 @@ class MavenDirectoryResourceLoader(directory: File) : DirectoryResourceLoader(di
     pomResourceLoader = MavenPomFileResourceLoader(pomArtifact)
   }
 
-  override fun associates(): List<URL> {
+  override fun associates(): Set<URL> {
     return pomResourceLoader.associates()
   }
 }

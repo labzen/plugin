@@ -4,7 +4,7 @@ import cn.labzen.plugin.api.event.Publishable
 import java.util.*
 
 /**
- * 插件可能会在任何时间、条件下需要发布事件，通知上层应用事件信息，提供本类以方便在任何类中获取到
+ * 插件可能会在任何时间、条件下需要发布事件，通知上层应用（宿主）事件信息，提供本类以方便在任何类中获取到
  */
 object Publisher {
 

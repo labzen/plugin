@@ -81,7 +81,7 @@ open class Values {
         try {
           pd.writeMethod.invoke(targetBean, value)
         } catch (e: Exception) {
-          // ignore that
+          // ignore
         }
       }
     }

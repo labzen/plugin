@@ -121,4 +121,7 @@ class SpecificConfigurator internal constructor(
   override fun configure(name: String, value: Any) {
     configurationValues[name] = value
   }
+
+  override fun configuration(): Map<String, Any?> =
+    configurationValues.whole()
 }

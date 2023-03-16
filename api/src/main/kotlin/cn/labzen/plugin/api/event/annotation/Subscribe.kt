@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component
 @Retention(AnnotationRetention.RUNTIME)
 @Component
 annotation class Subscribe(
-  // @Deprecated(message = "靠name的唯一性来约束？？？") val plugin: String,
   val name: String,
   val version: String = "1"
 )

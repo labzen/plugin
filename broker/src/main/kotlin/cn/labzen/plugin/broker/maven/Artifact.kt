@@ -42,8 +42,6 @@ data class Artifact @JvmOverloads constructor(
       originalSourcePath = if (packaging == Packaging.POM && pomFileSourcePath != null) {
         pomFileSourcePath
       } else {
-        // val sourceFileLocation = Mavens.toLocalAbsolutePath(this)
-        // URL("file:$sourceFileLocation")
         Mavens.toLocalAbsolutePath(this)
       }
     }

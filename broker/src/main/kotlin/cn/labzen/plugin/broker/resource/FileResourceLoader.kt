@@ -8,7 +8,7 @@ import cn.labzen.plugin.broker.exception.PluginResourceLoadException
 import java.io.File
 import java.net.URL
 
-open class FileResourceLoader(private val file: File) : ResourceLoader {
+internal abstract class FileResourceLoader(protected val file: File) : ResourceLoader {
 
   protected val fileUrl: URL = file.toURI().toURL()
 
@@ -22,8 +22,6 @@ open class FileResourceLoader(private val file: File) : ResourceLoader {
   }
 
   override fun getUrl(): URL = fileUrl
-
-  override fun associates(): List<URL> = emptyList()
 
   /**
    * 基于文件资源加载的，文件扩展限定，范围外的文件将加载异常，默认空集合，意为不限

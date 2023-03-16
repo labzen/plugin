@@ -15,7 +15,7 @@ class PluginInformation : Information {
   lateinit var pluggable: String
 
   // todo 从maven包里读取版本号
-  var version: String? = null
+  lateinit var version: String
   lateinit var description: String
 
   var tags: List<String>? = null

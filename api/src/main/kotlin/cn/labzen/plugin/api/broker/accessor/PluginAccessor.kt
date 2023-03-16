@@ -1,0 +1,55 @@
+package cn.labzen.plugin.api.broker.accessor
+
+import cn.labzen.plugin.api.broker.Information
+import cn.labzen.plugin.api.broker.Plugin
+
+/**
+ * 插件访问器，继承本抽象类，聚焦一个插件的所有扩展操作
+ */
+abstract class PluginAccessor {
+
+  private var plugin: Plugin? = null
+
+  /**
+   * 获取插件
+   */
+  fun plugin(): LimitedAccessPlugin? = plugin
+
+  /**
+   * 获取插件信息
+   */
+  fun information(): Information? = plugin?.information()
+
+  /**
+   * 获取插件的配置
+   */
+  fun configuration(): Map<String, Any?>? = plugin?.getConfigurator()?.configuration()
+
+  /**
+   * 插件已经加载；本方法被调用时，插件访问器即可使用[plugin]方法获取到插件实例进行操作
+   */
+  open fun loaded() {
+    // ignore
+  }
+
+  /**
+   * 插件已经激活（启动）
+   */
+  open fun activated() {
+    // ignore
+  }
+
+  /**
+   * 插件恢复记忆录状态，在业务上层应用（宿主）启动时，复原上次停止时插件的运行数据时调用
+   */
+  open fun recalled() {
+    // ignore
+  }
+
+  /**
+   * 插件已经失活（停止）
+   */
+  open fun inactivated() {
+    // ignore
+  }
+}

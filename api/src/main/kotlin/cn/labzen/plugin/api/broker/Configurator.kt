@@ -16,4 +16,6 @@ interface Configurator {
    * 设置插件配置内容
    */
   fun configure(name: String, value: Any)
+
+  fun configuration(): Map<String, Any?>
 }

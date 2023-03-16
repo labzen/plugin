@@ -6,6 +6,7 @@ import cn.labzen.plugin.api.bean.schema.SubscribeSchema
 import cn.labzen.plugin.api.event.Subscribable
 import cn.labzen.plugin.api.event.annotation.Subscribe
 import cn.labzen.plugin.api.event.annotation.SubscribeEvent
+import cn.labzen.plugin.broker.event.EventDispatcher
 import cn.labzen.plugin.broker.meta.PluginBrokerConfiguration
 import cn.labzen.spring.helper.Springs
 import org.reflections.ReflectionUtils
@@ -22,10 +23,18 @@ class SpecificSubscribe internal constructor(internal val schema: SubscribeSchem
 
   companion object {
 
+    internal fun prepareApplicationSubscribes() {
+      val subscribeSchemas = SpecificSubscribe.scanApplicationSubscribable()
+      subscribeSchemas.forEach {
+        val specificSubscribe = SpecificSubscribe(it.value)
+        EventDispatcher.registerSubscribe(specificSubscribe)
+      }
+    }
+
     /**
-     * 扫描在上层应用中的订阅
+     * 扫描在上层应用（宿主）中的订阅
      */
-    internal fun scanApplicationSubscribable(): Map<String, SubscribeSchema> {
+    private fun scanApplicationSubscribable(): Map<String, SubscribeSchema> {
       val configuration = Labzens.configurationWith(PluginBrokerConfiguration::class.java)
 
       val configurationBuilder = ConfigurationBuilder()

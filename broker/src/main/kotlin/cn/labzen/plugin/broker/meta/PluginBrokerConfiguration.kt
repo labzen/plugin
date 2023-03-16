@@ -36,4 +36,22 @@ interface PluginBrokerConfiguration {
    */
   @Item(path = "maven.plugin.dependency.version", defaultValue = "3.2.0", required = false)
   fun mavenPluginDependencyVersion(): String
+
+  /**
+   * 是否启动插件的回忆录机制
+   */
+  @Item(path = "memoir.enable", defaultValue = "false", logLevel = Level.INFO)
+  fun memoirEnable(): Boolean
+
+  /**
+   * 回忆录机制的存储位置
+   */
+  @Item(path = "memoir.root", logLevel = Level.INFO, required = false)
+  fun memoirStorePath(): String?
+
+  /**
+   * 回忆录机制下，插件对应的文件加密秘钥
+   */
+  @Item(path = "memoir.secret-key", logLevel = Level.INFO, required = false)
+  fun memoirSecretKey(): String?
 }
