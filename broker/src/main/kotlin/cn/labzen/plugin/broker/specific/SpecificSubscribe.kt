@@ -15,7 +15,7 @@ import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
 import java.util.function.Predicate
 
-// to!do: 发布时，可以带有挂载物的标识，需要考虑创建挂载物时生成标识，并让宿主得知
+// to!do: 发布时，可以带有挂载组件的标识，需要考虑创建挂载组件时生成标识，并让宿主得知
 // fix!me: 如果存在不同名称的多个发布者，并且订阅者订阅的是 *，发布者中存在重命的事件，而且事件参数不同，会发生找不到正确的订阅方法问题（通知不到）
 class SpecificSubscribe internal constructor(internal val schema: SubscribeSchema) {
 

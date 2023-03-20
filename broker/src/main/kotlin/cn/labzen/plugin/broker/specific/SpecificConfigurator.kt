@@ -8,9 +8,8 @@ import cn.labzen.plugin.api.dev.Configurable
 import cn.labzen.plugin.api.dev.annotation.Configuration
 import cn.labzen.plugin.api.dev.annotation.ConfigurationItem
 import cn.labzen.plugin.api.dev.annotation.Configured
+import cn.labzen.plugin.broker.javassist.JavassistUtil
 import javassist.util.proxy.MethodHandler
-import javassist.util.proxy.ProxyFactory
-import javassist.util.proxy.ProxyObject
 import org.reflections.ReflectionUtils
 import java.lang.reflect.Method
 import java.util.function.Predicate
@@ -71,14 +70,7 @@ class SpecificConfigurator internal constructor(
   }
 
   private fun createConfigurationProxy(interfaceClass: Class<Configurable>) {
-    val proxyFactory = ProxyFactory()
-    // 设置实现的接口
-    proxyFactory.interfaces = arrayOf(interfaceClass)
-    val proxyClass: Class<*> = proxyFactory.createClass()
-    val javassistProxy = proxyClass.getDeclaredConstructor().newInstance()
-    (javassistProxy as ProxyObject).handler = this
-
-    configurationProxies[interfaceClass] = javassistProxy
+    configurationProxies[interfaceClass] = JavassistUtil.createProxyImplements(this, interfaceClass)
   }
 
   private fun getProxy(configurationClass: Class<*>?): Any =

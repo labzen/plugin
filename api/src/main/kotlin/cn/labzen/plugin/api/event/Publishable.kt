@@ -8,7 +8,7 @@ import cn.labzen.plugin.api.dev.Mountable
 interface Publishable<out P : Publishable<P>> {
 
   /**
-   * 发布的时间与某挂载物相关
+   * 发布的时间与某挂载组件相关
    */
   fun withMount(mountable: Mountable): P
 }

@@ -22,4 +22,9 @@ interface LimitedAccessPlugin {
    * 获得一个挂载组件
    */
   fun mounting(mountableName: String): Mount
+
+  /**
+   * 获得一个命名为[identifier]的挂载组件
+   */
+  fun mounting(mountableName: String, identifier: String): Mount
 }

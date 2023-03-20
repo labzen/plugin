@@ -103,18 +103,18 @@ internal class MemorablePlugin(
     ContextAccessor.record(memoirPath, context)
   }
 
-  fun configure(name: String, value: Any) {
+  internal fun configure(name: String, value: Any) {
     context.configuration[name] = value
   }
 
-  fun addMountable(mountable: MemoirMount) {
+  internal fun addMountable(mountable: MemoirMount) {
     context.mounted.add(mountable)
     ContextAccessor.record(memoirPath, context)
   }
 
-  fun removeMountable(mountable: MemoirMount) {
+  internal fun removeMountable(mountable: MemoirMount) {
     context.mounted.removeIf {
-      mountable.symbol == it.symbol
+      mountable.identifier == it.identifier
     }
     ContextAccessor.record(memoirPath, context)
   }

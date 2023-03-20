@@ -10,9 +10,9 @@ interface Mountable {
   /**
    * 当挂载可挂载组件时调用
    *
-   * @param symbol 挂载实例符号，用于唯一标识一个挂载物，参考[Mount]
+   * @param identifier 挂载实例符号，用于唯一标识一个挂载组件，参考[Mount]
    */
-  fun onMounted(symbol: String)
+  fun onMounted(identifier: String)
 
   /**
    * 当要卸载可挂载组件前调用

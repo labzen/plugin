@@ -2,7 +2,15 @@
 
 package cn.labzen.plugin.broker
 
+import cn.labzen.plugin.api.broker.Information
+import cn.labzen.plugin.api.broker.Mount
 import cn.labzen.plugin.api.broker.Plugin
+import cn.labzen.plugin.api.broker.accessor.LimitedAccessPlugin
+import cn.labzen.plugin.api.broker.accessor.PluginAccessDelegator
+import cn.labzen.plugin.broker.accessor.PluginAccessors
+import cn.labzen.plugin.broker.impl.handler.MountInstanceHolder
+import cn.labzen.plugin.broker.impl.handler.PluginProxyHandler
+import cn.labzen.plugin.broker.javassist.JavassistUtil
 import cn.labzen.plugin.broker.loader.PluginLoader
 import cn.labzen.plugin.broker.maven.Mavens
 import cn.labzen.plugin.broker.memoir.Memoirs
@@ -14,19 +22,40 @@ import cn.labzen.plugin.broker.resource.MavenJarFileResourceLoader
 import cn.labzen.plugin.broker.resource.ResourceLoader
 import cn.labzen.plugin.broker.specific.SpecificPlugin
 import java.io.File
+import java.util.*
 
-class PluginBroker private constructor(private val resourceLoader: ResourceLoader) {
+class PluginBroker private constructor(private val resourceLoader: ResourceLoader) : PluginAccessDelegator {
 
   private var plugin: Plugin? = null
 
   /**
    * 加载插件到容器中（JVM），并未实例化
    */
-  fun load(): Plugin =
-    Memoirs.make(internalLoad(), null, resourceLoader)
+  fun load(): Plugin = load(null)
 
-  internal fun load(context: MemoirContext): Plugin =
-    Memoirs.make(internalLoad(), context, resourceLoader)
+  internal fun load(context: MemoirContext?): Plugin {
+    val specificPlugin = internalLoad()
+    val information = specificPlugin.information()
+    PluginAccessors.setPluginAccessDelegator(this, information)
+
+    val memoirPlugin = Memoirs.makeIfEnabled(specificPlugin, context, resourceLoader)
+
+    val proxiedPlugin = JavassistUtil.createProxyImplements(PluginProxyHandler(memoirPlugin), Plugin::class.java)
+    plugin = proxiedPlugin
+    PluginAccessors.informLoaded(information.name(), information.version())
+    return proxiedPlugin
+      // .also { plugin = it }
+
+    // val proxyFactory = ProxyFactory()
+    // proxyFactory.interfaces = arrayOf(Plugin::class.java)
+    // @Suppress("UNCHECKED_CAST")
+    // val proxyClass: Class<Plugin> = proxyFactory.createClass() as Class<Plugin>
+    // val javassistProxy = proxyClass.getDeclaredConstructor().newInstance()
+    //
+    // (javassistProxy as ProxyObject).handler = accessibleHandler
+    //
+    // return javassistProxy.also { plugin = it }
+  }
 
   private fun internalLoad(): SpecificPlugin {
     val loader = PluginLoader(resourceLoader)
@@ -45,6 +74,19 @@ class PluginBroker private constructor(private val resourceLoader: ResourceLoade
     }
     plugin = null
   }
+
+  // ===================================================================================================================
+
+  override fun plugin(): LimitedAccessPlugin = plugin!!
+
+  override fun information(): Information = plugin!!.information()
+
+  override fun configuration(): Map<String, Any?> = plugin!!.getConfigurator().configuration()
+
+  override fun mounted(): List<Mount> = MountInstanceHolder.mounted()
+
+  override fun mounted(identifier: String): Optional<Mount> =
+    Optional.ofNullable(MountInstanceHolder.mounted(identifier))
 
   companion object {
 

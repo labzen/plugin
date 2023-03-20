@@ -8,28 +8,15 @@ import cn.labzen.plugin.api.event.Publishable
 import cn.labzen.plugin.api.event.annotation.Publish
 import cn.labzen.plugin.api.event.annotation.PublishEvent
 import cn.labzen.plugin.broker.event.EventDispatcher
+import cn.labzen.plugin.broker.javassist.JavassistUtil
 import javassist.util.proxy.MethodHandler
-import javassist.util.proxy.ProxyFactory
-import javassist.util.proxy.ProxyObject
 import org.reflections.ReflectionUtils
 import java.lang.reflect.Method
 import java.util.function.Predicate
 
 class SpecificPublish internal constructor(internal val schema: PublishSchema) : MethodHandler {
 
-  internal val instance: Publishable<*> = let {
-    val javassistProxy = createProxy()
-    (javassistProxy as ProxyObject).handler = this
-
-    javassistProxy as Publishable<*>
-  }
-
-  private fun createProxy(): Any? {
-    val proxyFactory = ProxyFactory()
-    proxyFactory.interfaces = arrayOf(schema.publishableClass)
-    val proxyClass: Class<*> = proxyFactory.createClass()
-    return proxyClass.getDeclaredConstructor().newInstance()
-  }
+  internal val instance: Publishable<*> = JavassistUtil.createProxyImplements(this,schema.publishableClass)
 
   override fun invoke(self: Any?, thisMethod: Method, proceed: Method?, args: Array<out Any?>): Any? {
     // 调用 withMount 方法
@@ -45,11 +32,8 @@ class SpecificPublish internal constructor(internal val schema: PublishSchema) :
     return null
   }
 
-  private fun createWithMountPublishableProxy(mountable: Mountable): Any {
-    val javassistProxy = createProxy()
-    (javassistProxy as ProxyObject).handler = WithMountPublishable(mountable, schema)
-    return javassistProxy
-  }
+  private fun createWithMountPublishableProxy(mountable: Mountable): Any =
+    JavassistUtil.createProxyImplements(WithMountPublishable(mountable, schema), schema.publishableClass)
 
   class WithMountPublishable(private val mountable: Mountable, private val schema: PublishSchema) : MethodHandler {
 

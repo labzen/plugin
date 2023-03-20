@@ -1,6 +1,7 @@
 package cn.labzen.plugin.broker.specific
 
 import cn.labzen.cells.core.kotlin.throwRuntimeUnless
+import cn.labzen.cells.core.utils.Randoms
 import cn.labzen.plugin.api.bean.Outcome
 import cn.labzen.plugin.api.bean.Outcome.PluginOperateStatus.SUCCESS
 import cn.labzen.plugin.api.bean.Outcome.PluginOperateStatus.WARING
@@ -22,11 +23,11 @@ import cn.labzen.plugin.broker.specific.reflection.PluginReflector.Companion.PUB
 import cn.labzen.plugin.broker.specific.reflection.PluginReflector.Companion.SUBSCRIBABLE_CLASSES
 import cn.labzen.plugin.broker.xml.PluginInformation
 import java.lang.reflect.InvocationTargetException
+import java.util.*
 
 class SpecificPlugin internal constructor(
   private val information: PluginInformation,
-  private val pluggableClass: Class<Pluggable>,
-  // internal val resource: URL
+  private val pluggableClass: Class<Pluggable>
 ) : Plugin {
 
   private val configurator: SpecificConfigurator
@@ -36,12 +37,12 @@ class SpecificPlugin internal constructor(
   private val subscribeSchemas: Map<String, SubscribeSchema>
 
   private lateinit var pluggableInstance: Pluggable
+
+  @Deprecated("这俩状态变量，感觉作用不大")
   private var prepared = false
   private var activated = false
 
   init {
-    PluginAccessors.informLoaded(information.name, information.version, this)
-
     val reflector = PluginReflector(pluggableClass)
     reflector.scan()
 
@@ -145,13 +146,18 @@ class SpecificPlugin internal constructor(
   override fun mounts(): List<MountSchema> = mountSchemas.values.toList()
 
   override fun mounting(mountableName: String): Mount {
+    val identifier = Randoms.string(16, Randoms.NUMBERS_AND_LETTERS_LOWER_CASE)
+    return mounting(mountableName, identifier)
+  }
+
+  override fun mounting(mountableName: String, identifier: String): Mount {
     val mountSchema =
       mountSchemas[mountableName] ?: throw PluginOperationException("无效的挂载组件 - $mountableName")
 
     val applicableExtensionSchemas = extensionSchemas.filter {
       it.value.mountedFiled?.type == mountSchema.mountableClass
     }
-    return SpecificMount(configurator, mountSchema, applicableExtensionSchemas)
+    return SpecificMount(identifier, configurator, mountSchema, applicableExtensionSchemas)
   }
 
   override fun publishers(): List<PublishSchema> = publishSchemas.values.toList()

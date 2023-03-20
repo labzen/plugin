@@ -9,6 +9,7 @@ import org.apache.maven.model.Model
 import java.io.File
 import java.net.URL
 import java.nio.file.Files
+import java.nio.file.StandardOpenOption.*
 
 internal class MavenPomFileResourceLoader(private val artifact: Artifact) :
   FileResourceLoader(artifact.let {
@@ -316,7 +317,7 @@ internal class MavenPomFileResourceLoader(private val artifact: Artifact) :
 
     fun createVirtualPomFileLoader(content: String): MavenPomFileResourceLoader {
       val tempPomFile = File.createTempFile("pom", ".pom")
-      Files.writeString(tempPomFile.toPath(), content)
+      Files.writeString(tempPomFile.toPath(), content, CREATE, WRITE, TRUNCATE_EXISTING)
 
       val artifact = Mavens.parsePomFileToArtifact(tempPomFile)
       return MavenPomFileResourceLoader(artifact)

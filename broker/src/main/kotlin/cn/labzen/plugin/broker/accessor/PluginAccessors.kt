@@ -1,8 +1,9 @@
 package cn.labzen.plugin.broker.accessor
 
 import cn.labzen.meta.Labzens
-import cn.labzen.plugin.api.broker.Plugin
+import cn.labzen.plugin.api.broker.Information
 import cn.labzen.plugin.api.broker.accessor.AccessPlugin
+import cn.labzen.plugin.api.broker.accessor.PluginAccessDelegator
 import cn.labzen.plugin.api.broker.accessor.PluginAccessor
 import cn.labzen.plugin.broker.meta.PluginBrokerConfiguration
 import cn.labzen.spring.helper.Springs
@@ -13,8 +14,8 @@ import org.reflections.util.ConfigurationBuilder
 internal object PluginAccessors {
 
   private val accessors = mutableMapOf<Pair<String, String>, PluginAccessor>()
-  private val accessorPluginField = PluginAccessor::class.java.let {
-    it.getDeclaredField("plugin").also { field -> field.isAccessible = true }
+  private val accessorDelegatorField = PluginAccessor::class.java.let {
+    it.getDeclaredField("delegator").also { field -> field.isAccessible = true }
   }
 
   /**
@@ -46,11 +47,16 @@ internal object PluginAccessors {
     accessors[key] = accessorInstance
   }
 
-  fun informLoaded(name: String, version: String, plugin: Plugin) {
-    val key = Pair(name, version)
+  fun setPluginAccessDelegator(delegator: PluginAccessDelegator, information: Information) {
+    val key = Pair(information.name(), information.version())
     val accessor = accessors[key] ?: return
 
-    accessorPluginField.set(accessor, plugin)
+    accessorDelegatorField.set(accessor, delegator)
+  }
+
+  fun informLoaded(name: String, version: String) {
+    val key = Pair(name, version)
+    val accessor = accessors[key] ?: return
 
     accessor.loaded()
   }

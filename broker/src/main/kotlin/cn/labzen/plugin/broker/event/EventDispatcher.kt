@@ -87,7 +87,7 @@ internal object EventDispatcher {
     eventName: String,
     args: Array<out Any?>
   ) {
-    // 获取到事件发布相关的挂载物实例，所对应的上层应用（宿主）具体挂载物
+    // 获取到事件发布相关的挂载组件实例，所对应的上层应用（宿主）具体挂载组件
     val mount = mountable?.let { SpecificMount.MOUNTABLE_REVERSE_INDEXES[it] }
 
     // 找到匹配发布者名称的所有订阅者
@@ -195,7 +195,7 @@ internal object EventDispatcher {
         subscribeMethod.invoke(subscribe.instance, mapArguments)
         return
       } else if (Mount::class.java == firstArgumentType) {
-        // 只接收发布事件时的关联挂载物，虽然可以，但没啥意义
+        // 只接收发布事件时的关联挂载组件，虽然可以，但没啥意义
         subscribeMethod.invoke(subscribe.instance, mount)
         return
       }

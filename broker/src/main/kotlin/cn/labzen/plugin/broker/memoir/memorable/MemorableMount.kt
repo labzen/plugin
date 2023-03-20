@@ -6,24 +6,24 @@ import cn.labzen.plugin.broker.specific.SpecificMount
 
 internal class MemorableMount(
   mountName: String,
-  private val specific: SpecificMount,
-  private val plugin: MemorablePlugin
-) : Mount by specific {
+  private val specificMount: SpecificMount,
+  private val memorablePlugin: MemorablePlugin
+) : Mount by specificMount {
 
-  private val mountable = MemoirMount(mountName, specific.getSymbol())
+  private val mountable = MemoirMount(mountName, specificMount.identifier())
 
   override fun setArgument(name: String, value: Any) {
-    specific.setArgument(name, value)
+    specificMount.setArgument(name, value)
     mountable.arguments[name] = value
   }
 
   override fun done() {
-    specific.done()
-    plugin.addMountable(mountable)
+    specificMount.done()
+    memorablePlugin.addMountable(mountable)
   }
 
   override fun unmounting() {
-    specific.unmounting()
-    plugin.removeMountable(mountable)
+    specificMount.unmounting()
+    memorablePlugin.removeMountable(mountable)
   }
 }

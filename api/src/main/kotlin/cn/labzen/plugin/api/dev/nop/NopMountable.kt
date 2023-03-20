@@ -4,7 +4,7 @@ import cn.labzen.plugin.api.dev.Mountable
 
 class NopMountable : Mountable {
 
-  override fun onMounted(symbol: String) {
+  override fun onMounted(identifier: String) {
     // do nothing
   }
 

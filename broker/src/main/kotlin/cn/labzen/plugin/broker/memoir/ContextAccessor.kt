@@ -4,7 +4,7 @@ import cn.labzen.plugin.broker.memoir.bean.MemoirContext
 import cn.labzen.plugin.broker.memoir.crypto.Crypto
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardOpenOption
+import java.nio.file.StandardOpenOption.*
 
 internal object ContextAccessor {
 
@@ -19,7 +19,7 @@ internal object ContextAccessor {
   fun record(path: Path, context: MemoirContext) {
     val content = crypto.encrypt(MemoirContext::class.java, context)
     try {
-      Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.WRITE)
+      Files.writeString(path, content, CREATE, WRITE, TRUNCATE_EXISTING)
     } catch (e: Exception) {
       // log error
     }

@@ -93,7 +93,7 @@ object Memoirs {
 
     val rebuildMounts = context.rebuildMounts()
     rebuildMounts.forEach { mm ->
-      val mount = plugin.mounting(mm.name)
+      val mount = plugin.mounting(mm.name, mm.identifier)
       mm.arguments.forEach { (key, value) ->
         mount.setArgument(key, value)
       }
@@ -106,7 +106,11 @@ object Memoirs {
   /**
    * 为插件创建一个回忆录
    */
-  internal fun make(plugin: SpecificPlugin, existedContext: MemoirContext?, resourceLoader: ResourceLoader): Plugin {
+  internal fun makeIfEnabled(
+    plugin: SpecificPlugin,
+    existedContext: MemoirContext?,
+    resourceLoader: ResourceLoader
+  ): Plugin {
     if (!enabled) {
       return plugin
     }

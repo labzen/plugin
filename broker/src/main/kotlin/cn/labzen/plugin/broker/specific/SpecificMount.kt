@@ -19,6 +19,7 @@ import java.util.function.Predicate
 import cn.labzen.plugin.api.dev.annotation.Mount as MountAnnotation
 
 class SpecificMount internal constructor(
+  private val identifier: String,
   private val configurator: SpecificConfigurator,
   private val schema: MountSchema,
   private val extensionSchemas: Map<String, ExtensionSchema>
@@ -26,9 +27,8 @@ class SpecificMount internal constructor(
 
   private val argumentValues = Values.withSchema(schema.arguments)
   private lateinit var instance: Mountable
-  private val symbol = Randoms.string(16, Randoms.NUMBERS_AND_LETTERS_LOWER_CASE)
 
-  override fun getSymbol(): String = symbol
+  override fun identifier(): String = identifier
 
   override fun setArgument(name: String, value: Any) {
     argumentValues[name] = value
@@ -60,7 +60,7 @@ class SpecificMount internal constructor(
       throw PluginInstantiateException("无法对挂载组件注入参数 - ${schema.mountableClass}")
     }
 
-    instance.onMounted(symbol)
+    instance.onMounted(identifier)
 
     MOUNTABLE_REVERSE_INDEXES[instance] = this
   }
@@ -85,7 +85,7 @@ class SpecificMount internal constructor(
   }
 
   override fun extendingSingleton(extensibleName: String): Extension =
-    SpecificExtension.hold(extensibleName, symbol) { extending(extensibleName) }
+    SpecificExtension.hold(extensibleName, identifier) { extending(extensibleName) }
 
   companion object {
 
