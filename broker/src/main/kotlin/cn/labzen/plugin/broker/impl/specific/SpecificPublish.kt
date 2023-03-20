@@ -1,4 +1,4 @@
-package cn.labzen.plugin.broker.specific
+package cn.labzen.plugin.broker.impl.specific
 
 import cn.labzen.plugin.api.bean.schema.EventSchema
 import cn.labzen.plugin.api.bean.schema.PublishSchema

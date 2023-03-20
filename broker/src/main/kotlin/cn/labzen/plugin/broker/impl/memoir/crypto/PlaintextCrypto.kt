@@ -1,4 +1,4 @@
-package cn.labzen.plugin.broker.memoir.crypto
+package cn.labzen.plugin.broker.impl.memoir.crypto
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule

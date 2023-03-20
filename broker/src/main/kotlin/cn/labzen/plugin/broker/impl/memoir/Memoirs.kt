@@ -1,4 +1,4 @@
-package cn.labzen.plugin.broker.memoir
+package cn.labzen.plugin.broker.impl.memoir
 
 import cn.labzen.meta.Labzens
 import cn.labzen.plugin.api.bean.Outcome.PluginOperateStatus.*
@@ -7,13 +7,13 @@ import cn.labzen.plugin.api.broker.Plugin
 import cn.labzen.plugin.broker.PluginBroker
 import cn.labzen.plugin.broker.accessor.PluginAccessors
 import cn.labzen.plugin.broker.exception.PluginUrnException
-import cn.labzen.plugin.broker.memoir.bean.MemoirContext
-import cn.labzen.plugin.broker.memoir.crypto.AesCrypto
-import cn.labzen.plugin.broker.memoir.crypto.PlaintextCrypto
-import cn.labzen.plugin.broker.memoir.memorable.MemorablePlugin
+import cn.labzen.plugin.broker.impl.memoir.bean.MemoirContext
+import cn.labzen.plugin.broker.impl.memoir.crypto.AesCrypto
+import cn.labzen.plugin.broker.impl.memoir.crypto.PlaintextCrypto
+import cn.labzen.plugin.broker.impl.memoir.memorable.MemorablePlugin
 import cn.labzen.plugin.broker.meta.PluginBrokerConfiguration
 import cn.labzen.plugin.broker.resource.ResourceLoader
-import cn.labzen.plugin.broker.specific.SpecificPlugin
+import cn.labzen.plugin.broker.impl.specific.SpecificPlugin
 import java.io.File
 
 object Memoirs {

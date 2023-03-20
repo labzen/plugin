@@ -1,4 +1,4 @@
-package cn.labzen.plugin.broker.memoir.bean
+package cn.labzen.plugin.broker.impl.memoir.bean
 
 enum class PluginContextStatus {
 

@@ -1,7 +1,7 @@
-package cn.labzen.plugin.broker.memoir
+package cn.labzen.plugin.broker.impl.memoir
 
-import cn.labzen.plugin.broker.memoir.bean.MemoirContext
-import cn.labzen.plugin.broker.memoir.crypto.Crypto
+import cn.labzen.plugin.broker.impl.memoir.bean.MemoirContext
+import cn.labzen.plugin.broker.impl.memoir.crypto.Crypto
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption.*
@@ -10,7 +10,7 @@ internal object ContextAccessor {
 
   private lateinit var crypto: Crypto
   fun setCrypto(crypto: Crypto) {
-    this.crypto = crypto
+    ContextAccessor.crypto = crypto
   }
 
   /**

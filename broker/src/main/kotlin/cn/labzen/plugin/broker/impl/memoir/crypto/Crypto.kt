@@ -1,4 +1,4 @@
-package cn.labzen.plugin.broker.memoir.crypto
+package cn.labzen.plugin.broker.impl.memoir.crypto
 
 import java.io.Serializable
 

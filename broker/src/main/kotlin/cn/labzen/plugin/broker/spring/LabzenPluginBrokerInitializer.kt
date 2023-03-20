@@ -4,8 +4,8 @@ import cn.labzen.meta.spring.SpringApplicationContextInitializerOrder
 import cn.labzen.plugin.broker.accessor.PluginAccessors
 import cn.labzen.plugin.broker.event.PublisherDelegator
 import cn.labzen.plugin.broker.maven.Mavens
-import cn.labzen.plugin.broker.memoir.Memoirs
-import cn.labzen.plugin.broker.specific.SpecificSubscribe
+import cn.labzen.plugin.broker.impl.memoir.Memoirs
+import cn.labzen.plugin.broker.impl.specific.SpecificSubscribe
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.Ordered

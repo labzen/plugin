@@ -1,8 +1,8 @@
-package cn.labzen.plugin.broker.memoir.memorable
+package cn.labzen.plugin.broker.impl.memoir.memorable
 
 import cn.labzen.plugin.api.broker.Mount
-import cn.labzen.plugin.broker.memoir.bean.MemoirMount
-import cn.labzen.plugin.broker.specific.SpecificMount
+import cn.labzen.plugin.broker.impl.memoir.bean.MemoirMount
+import cn.labzen.plugin.broker.impl.specific.SpecificMount
 
 internal class MemorableMount(
   mountName: String,

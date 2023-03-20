@@ -1,4 +1,4 @@
-package cn.labzen.plugin.broker.memoir.bean
+package cn.labzen.plugin.broker.impl.memoir.bean
 
 internal data class MemoirMount(
   val name: String,

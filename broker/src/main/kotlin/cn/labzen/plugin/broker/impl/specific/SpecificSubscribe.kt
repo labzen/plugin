@@ -1,4 +1,4 @@
-package cn.labzen.plugin.broker.specific
+package cn.labzen.plugin.broker.impl.specific
 
 import cn.labzen.meta.Labzens
 import cn.labzen.plugin.api.bean.schema.DataMethodSchema

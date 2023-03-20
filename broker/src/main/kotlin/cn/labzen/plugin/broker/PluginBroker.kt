@@ -13,14 +13,14 @@ import cn.labzen.plugin.broker.impl.handler.PluginProxyHandler
 import cn.labzen.plugin.broker.javassist.JavassistUtil
 import cn.labzen.plugin.broker.loader.PluginLoader
 import cn.labzen.plugin.broker.maven.Mavens
-import cn.labzen.plugin.broker.memoir.Memoirs
-import cn.labzen.plugin.broker.memoir.bean.MemoirContext
-import cn.labzen.plugin.broker.memoir.memorable.MemorablePlugin
+import cn.labzen.plugin.broker.impl.memoir.Memoirs
+import cn.labzen.plugin.broker.impl.memoir.bean.MemoirContext
+import cn.labzen.plugin.broker.impl.memoir.memorable.MemorablePlugin
 import cn.labzen.plugin.broker.resource.JarFileResourceLoader
 import cn.labzen.plugin.broker.resource.MavenDirectoryResourceLoader
 import cn.labzen.plugin.broker.resource.MavenJarFileResourceLoader
 import cn.labzen.plugin.broker.resource.ResourceLoader
-import cn.labzen.plugin.broker.specific.SpecificPlugin
+import cn.labzen.plugin.broker.impl.specific.SpecificPlugin
 import java.io.File
 import java.util.*
 
@@ -44,17 +44,6 @@ class PluginBroker private constructor(private val resourceLoader: ResourceLoade
     plugin = proxiedPlugin
     PluginAccessors.informLoaded(information.name(), information.version())
     return proxiedPlugin
-      // .also { plugin = it }
-
-    // val proxyFactory = ProxyFactory()
-    // proxyFactory.interfaces = arrayOf(Plugin::class.java)
-    // @Suppress("UNCHECKED_CAST")
-    // val proxyClass: Class<Plugin> = proxyFactory.createClass() as Class<Plugin>
-    // val javassistProxy = proxyClass.getDeclaredConstructor().newInstance()
-    //
-    // (javassistProxy as ProxyObject).handler = accessibleHandler
-    //
-    // return javassistProxy.also { plugin = it }
   }
 
   private fun internalLoad(): SpecificPlugin {

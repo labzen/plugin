@@ -1,4 +1,4 @@
-package cn.labzen.plugin.broker.specific.reflection
+package cn.labzen.plugin.broker.impl.specific.reflection
 
 import cn.labzen.cells.core.definition.Constants
 import cn.labzen.plugin.api.dev.Configurable

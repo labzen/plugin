@@ -4,7 +4,7 @@ import cn.labzen.cells.core.kotlin.throwRuntimeUnless
 import cn.labzen.plugin.broker.exception.PluginResourceIOException
 import cn.labzen.plugin.broker.exception.PluginResourceLoadException
 import cn.labzen.plugin.broker.maven.Mavens
-import cn.labzen.plugin.broker.memoir.bean.MemoirContext
+import cn.labzen.plugin.broker.impl.memoir.bean.MemoirContext
 import org.springframework.boot.loader.jar.JarFile
 import java.io.File
 import java.io.IOException
